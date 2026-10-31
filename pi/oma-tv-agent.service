@@ -1,0 +1,15 @@
+[Unit]
+Description=Oma TV GPIO und HDMI Dienst
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/oma-tv/agent.env
+ExecStart=/usr/bin/python3 %h/oma-tv/pi/agent.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=graphical-session.target

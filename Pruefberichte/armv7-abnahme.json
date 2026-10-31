@@ -1,0 +1,22 @@
+{
+  "scope": "Local Docker demo; no Pi, GPIO, CEC, real camera or VPN.",
+  "checks": [
+    "actual container health endpoint",
+    "requested container userspace architecture",
+    "HTTP login, persistent config and restricted TV provisioning",
+    "container restart preserves settings and TV pairing",
+    "coordinated update switches host runtime and application version",
+    "update receives additional host modules from the selected image",
+    "unhealthy image triggers automatic rollback",
+    "rollback restores mutated data and paired TV access",
+    "rollback image remains selected after later restart",
+    "restarted rollback stays functional",
+    "interrupted-update recovery completes on the next invocation"
+  ],
+  "requested_platform": "linux/arm/v7",
+  "image_architecture": "arm",
+  "container_pointer_bits": 32,
+  "result": "passed",
+  "execution_scope": "ARMv7/32-bit container tested on development Docker under emulation; physical Pi 2B not tested",
+  "checked_at": "2026-10-31T17:04:44.619782+00:00"
+}

@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+const {Receiver}=require('../app/static/tv-remote.js');
+const r=new Receiver('browser-client');
+assert.deepEqual(r.request(),{client:'browser-client',boot:null,cursor:null});
+assert.deepEqual(r.accept({boot:'one',cursor:3,events:[{id:3,key:'Enter'}]}),[]);
+assert.deepEqual(r.accept({boot:'one',cursor:4,events:[{id:4,key:'ArrowRight'}]}),['ArrowRight']);
+assert.deepEqual(r.accept({boot:'one',cursor:4,events:[{id:4,key:'ArrowRight'}]}),[]);
+assert.deepEqual(r.accept({boot:'one',cursor:7,events:[{id:5,key:'VolumeUp'},{id:6,key:'Escape'},{id:6,key:'Enter'},{id:99,key:'Enter'}]}),['Escape']);
+assert.deepEqual(r.accept({boot:'two',cursor:1,events:[{id:1,key:'Enter'}]}),[]);
+assert.deepEqual(r.accept({boot:'two',cursor:2,events:[{id:2,key:'Enter'}],waiting:true}),[]);
+r.reset();
+assert.deepEqual(r.accept({boot:'two',cursor:3,events:[{id:3,key:'Enter'}]}),[]);
+assert.throws(()=>r.accept({boot:'two',cursor:-1}));
+assert.throws(()=>r.accept({boot:'two',cursor:4.5}));
+console.log('10 Prüfungen zu Fernbedienung, Wiederverbindung und doppelten Tasten bestanden.');

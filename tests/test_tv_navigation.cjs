@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+const {next}=require('../app/static/tv-navigation.js');
+const menu=[{id:'watch',x:200,y:300},{id:'help',x:650,y:190},{id:'power',x:650,y:410}];
+assert.equal(next(menu,'watch','ArrowRight'),'help');
+assert.equal(next(menu,'help','ArrowDown'),'power');
+assert.equal(next(menu,'power','ArrowUp'),'help');
+assert.equal(next(menu,'power','ArrowLeft'),'watch');
+assert.equal(next(menu,'watch','ArrowLeft'),'watch');
+assert.equal(next(menu,'help','ArrowUp'),'help');
+assert.equal(next(menu,'missing','ArrowDown'),'watch');
+assert.equal(next([],'missing','ArrowDown'),null);
+const dialog=[{id:'cancel',x:150,y:150},{id:'confirm',x:400,y:150}];
+assert.equal(next(dialog,'cancel','ArrowRight'),'confirm');
+assert.equal(next(dialog,'confirm','ArrowLeft'),'cancel');
+console.log('10 Prüfungen zur Pfeiltasten-Navigation bestanden.');

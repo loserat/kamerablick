@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const {view}=require('../app/static/telemetry-view.js');
+const now=Date.parse('2026-10-30T12:00:00Z');
+let data={enabled:true,camera_fresh:true,camera_state:'CONNECTED',events_fresh:true,events_state:'connected'};
+assert.equal(view(data,now).camera,'Online');
+assert.equal(view({...data,camera_fresh:false},now).camera,'Status nicht aktuell');
+assert.equal(view({...data,camera_state:'DISCONNECTED'},now).camera,'Offline');
+assert.equal(view({...data,events_fresh:false},now).connection,'Unterbrochen');
+assert.equal(view({...data,events_fresh:false,events_state:'unsupported'},now).connection,'Nicht unterstützt');
+assert.equal(view(data,now).records.last_motion.label,'Noch nicht empfangen');
+assert.equal(view({...data,supported_smart:[]},now).records.last_person.label,'Nicht unterstützt');
+assert.equal(view({...data,last_motion:{occurred_at:'invalid'}},now).records.last_motion.label,'Noch nicht empfangen');
+assert.equal(view({...data,last_motion:{occurred_at:'2026-10-30T11:57:00Z'}},now).records.last_motion.label,'vor 3 Minuten');
+assert.equal(view({enabled:false,reason:'demo'},now).records.last_motion.label,'Nicht verfügbar');
+assert.equal(view({enabled:false,reason:'manual'},now).camera,'Stream ohne Statusdaten');
+assert.equal(view({...data,camera_fresh:false,last_motion:{occurred_at:'2026-10-30T11:57:00Z'}},now).records.last_motion.label,'vor 3 Minuten');
+console.log('12 Prüfungen zur Statusdarstellung bestanden.');

@@ -1,0 +1,19 @@
+{
+  "scope": "Local Docker demo; no Pi, GPIO, CEC, real camera or VPN.",
+  "checks": [
+    "actual container health endpoint",
+    "HTTP login, persistent config and restricted TV provisioning",
+    "container restart preserves settings and TV pairing",
+    "coordinated update switches host runtime and application version",
+    "update receives additional host modules from the selected image",
+    "unhealthy image triggers automatic rollback",
+    "rollback restores mutated data and paired TV access",
+    "rollback image remains selected after later restart",
+    "restarted rollback stays functional",
+    "interrupted-update recovery completes on the next invocation"
+  ],
+  "image_architecture": "arm64",
+  "result": "passed",
+  "checked_at": "2026-10-30T19:39:14.522790+00:00",
+  "runtime_includes": "player_health.py and additional image-provided future_helper.py"
+}

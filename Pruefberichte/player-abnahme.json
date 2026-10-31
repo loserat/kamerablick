@@ -1,0 +1,13 @@
+{
+  "result": "passed",
+  "scope": "Native mpv with local generated video and null video output; no RTSP, Protect, HDMI, GPIO or CEC hardware",
+  "clock": "Watchdog clock runs 4x for acceptance; production thresholds unchanged",
+  "player": "mpv v0.40.0 Copyright \u00a9 2000-2025 mpv/MPlayer/mplayer2 projects",
+  "checks": [
+    "real mpv IPC reports advancing playback with video output",
+    "stalled playback is terminated even while process remains alive",
+    "new player recovers without repeating CEC or extending auto-off",
+    "return to menu removes IPC socket and disables recovery"
+  ],
+  "architecture": "arm64"
+}
