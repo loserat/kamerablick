@@ -1,10 +1,10 @@
 # Kamerablick installieren
 
-Aktueller Stand: Raspberry Pi 2B als Zielgerät benannt; Einrichtung und Zugriff stehen noch aus. Die Protect-Zentrale wurde als „Instant“ benannt, vorläufig als UNVR Instant eingeordnet. TV-Modell, Pi-Revision und genaue Protect-Version sind noch offen. Diese Anleitung beschreibt den vorbereiteten Weg, keine bereits abgeschlossene Geräteinstallation.
+Aktueller Stand: Raspberry Pi 4B mit WLAN als Zielgerät benannt; Einrichtung und Zugriff stehen noch aus. Die Protect-Zentrale wurde als „Instant“ benannt, vorläufig als UNVR Instant eingeordnet. TV-Modell, Speicherausstattung des Pi und genaue Protect-Version sind noch offen. Diese Anleitung beschreibt den vorbereiteten Weg, keine bereits abgeschlossene Geräteinstallation.
 
 ## 1. Raspberry Pi vorbereiten
 
-Ausgangspunkt ist Raspberry Pi OS **mit Desktop**. Auf dem Pi 2B die **32-Bit-Version** verwenden; für neuere Pi-Modelle ist auch ARM64 vorbereitet. Der kurze Pi-2-Einstieg steht in [PI2.md](PI2.md). Der Benutzer, der später automatisch am Desktop angemeldet wird, betreibt auch Kamerablick. Das Modell und die tatsächlich flüssig wiedergegebene Auflösung prüfen wir beim ersten Gerätetest.
+Ausgangspunkt für den Pi 4B ist Raspberry Pi OS **(64 Bit) mit Desktop**. WLAN, Land, Benutzer und SSH können bereits im Raspberry Pi Imager eingerichtet werden. Der kurze Pi-4-Einstieg steht in [PI4.md](PI4.md); die alternative Pi-2-Anleitung für 32 Bit bleibt in [PI2.md](PI2.md). Der Benutzer, der später automatisch am Desktop angemeldet wird, betreibt auch Kamerablick. WLAN-Empfang am TV und die tatsächlich flüssig wiedergegebene Auflösung prüfen wir beim ersten Gerätetest.
 
 Benötigt werden:
 
@@ -13,7 +13,7 @@ Benötigt werden:
 - `cec-utils` aus der Paketverwaltung für den dauerhaft laufenden CEC-Hilfsprozess. Eine zusätzliche Python-CEC-Bindung ist nicht nötig; CEC läuft außerhalb des Dashboard-Containers auf dem Pi.
 - Eine funktionierende grafische Sitzung über HDMI.
 
-Docker nach der [offiziellen Debian-Anleitung](https://docs.docker.com/engine/install/debian/) installieren; auf dem Pi 2B ist die Architektur `armhf`/ARMv7. Die dedizierten Raspbian-Pakete enden mit Docker 28; Docker nennt für ARMv7 die Debian-armhf-Pakete als Weg für neuere Versionen ([Hinweis](https://docs.docker.com/engine/install/raspberry-pi-os/)). Docker-Zugriff für den Benutzer erlaubt weitreichende Änderungen am System; nur dem vorgesehenen vertrauenswürdigen Benutzer geben. Vorhandene Docker-Installationen zuerst prüfen und nicht pauschal ersetzen.
+Docker auf dem Pi 4B mit 64-Bit-System nach der [offiziellen Debian-Anleitung](https://docs.docker.com/engine/install/debian/) für `arm64` installieren. Docker verweist für Raspberry Pi OS in 64 Bit ausdrücklich auf diese Pakete ([Hinweis](https://docs.docker.com/engine/install/raspberry-pi-os/)). Für die alternative Pi-2-Installation gelten die ARMv7-Hinweise in [PI2.md](PI2.md). Docker-Zugriff für den Benutzer erlaubt weitreichende Änderungen am System; nur dem vorgesehenen vertrauenswürdigen Benutzer geben. Vorhandene Docker-Installationen zuerst prüfen und nicht pauschal ersetzen.
 
 Die Bedienung soll später ohne Anmeldung möglich sein. Desktop-Autologin und Bildschirmabschaltung werden bewusst am Gerät in den Pi-Einstellungen eingerichtet. Der Installer verändert weder Desktop-Anmeldungen noch Benutzergruppen, SSH, VPN, Router oder Paketquellen. Basis: [Raspberry-Pi-Konfiguration](https://www.raspberrypi.com/documentation/computers/configuration.html).
 

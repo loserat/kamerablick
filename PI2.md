@@ -1,5 +1,7 @@
 # Raspberry Pi 2B: normal aufsetzen, später Kamerablick ergänzen
 
+Diese Anleitung bleibt als Alternative für einen Pi 2B mit LAN erhalten. Das aktuelle Zielgerät ist ein **Pi 4B mit WLAN**; dafür gilt [PI4.md](PI4.md).
+
 Der vorgesehene Weg benötigt kein eigenes Kamerablick-Betriebssystemimage. Zuerst Raspberry Pi OS installieren; Kamerablick wird anschließend aus dem GitHub-Projekt und einem fertig gebauten Docker-Image ergänzt.
 
 ## Jetzt: Pi normal einrichten

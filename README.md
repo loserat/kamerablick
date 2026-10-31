@@ -2,9 +2,10 @@
 
 Eine einfache TV-Ansicht für UniFi Protect: Taster drücken, Kamera ansehen und den Fernseher wieder in Standby schicken. Das geschützte Dashboard dient der Einrichtung und Wartung.
 
-**Noch keine abgeschlossene Inbetriebnahme.** Als Ziel ist jetzt ein Raspberry Pi 2B vorgesehen; die Installation auf diesem Gerät wurde noch nicht geprüft. „Instant“ ist als Protect-Zentrale benannt; genaue Version und TV-Modell sind offen. Softwaretests ersetzen keine Inbetriebnahme am Gerät.
+**Noch keine abgeschlossene Inbetriebnahme.** Als Ziel ist ein Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit) mit Desktop vorgesehen; die Installation auf diesem Gerät wurde noch nicht geprüft. „Instant“ ist als Protect-Zentrale benannt; genaue Version und TV-Modell sind offen. Softwaretests ersetzen keine Inbetriebnahme am Gerät.
 
-- [Pi 2B normal aufsetzen und später von GitHub installieren](PI2.md)
+- [Pi 4B mit WLAN aufsetzen und später von GitHub installieren](PI4.md)
+- [Alternative: Pi 2B mit LAN und 32 Bit](PI2.md)
 - [Installation und Updates](INSTALLATION.md)
 - [Vollständige Abnahme und offene Punkte](ABNAHME.md)
 - [Kamerastatus und Ereignisse](TELEMETRIE.md)
@@ -39,7 +40,7 @@ cd ~/kamerablick
 ```
 
 
-Voraussetzung: Raspberry Pi OS mit Desktop, auf dem Pi 2B in 32 Bit, Docker/Compose, GPIO-Bibliothek, Chromium, mpv und cec-utils. Details und Pakete stehen in der Installationsanleitung.
+Voraussetzung: Raspberry Pi OS mit Desktop, auf dem Pi 4B empfohlen in 64 Bit, Docker/Compose, GPIO-Bibliothek, Chromium, mpv und cec-utils. Details und Pakete stehen in der Installationsanleitung.
 
 Als normaler Desktop-Benutzer im Projektordner:
 
@@ -48,7 +49,7 @@ python3 pi/install.py --check
 python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.0
 ```
 
-Das öffentliche Projekt liegt unter [loserat/kamerablick](https://github.com/loserat/kamerablick). Verfügbare Versionen stehen unter [Releases](https://github.com/loserat/kamerablick/releases). Für den Pi 2B sind ARMv7-Images vorbereitet. Ohne `--image` bleibt ein lokaler Entwicklerbau möglich; auf dem Pi 2B den fertig veröffentlichten Container verwenden.
+Das öffentliche Projekt liegt unter [loserat/kamerablick](https://github.com/loserat/kamerablick). Verfügbare Versionen stehen unter [Releases](https://github.com/loserat/kamerablick/releases). Das Image enthält ARM64 für den Pi 4B mit 64-Bit-System sowie ARMv7 und AMD64; Docker wählt die zum System passende Variante automatisch. Ohne `--image` bleibt ein lokaler Entwicklerbau möglich; für die normale Pi-Installation den fertig veröffentlichten Container verwenden.
 
 Die erste Zeile prüft nur. Die zweite installiert erst nach erfolgreicher Prüfung. Vorhandene eigene gleichnamige Service-/Autostartdateien werden nicht überschrieben; ein vorhandener Demomodus wird nicht stillschweigend auf Echtbetrieb umgestellt.
 
