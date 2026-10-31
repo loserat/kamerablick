@@ -1,13 +1,14 @@
 import json, os, secrets, time, re, threading, urllib.request, urllib.error
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from protect import Protect, ProtectError, normalize_host
+from protect import Protect, ProtectError, connection_credentials
 from telemetry import Telemetry, inactive
 
 DATA=Path(os.getenv('DATA_DIR','./data'))
 DATA.mkdir(parents=True,exist_ok=True)
 PASSWORD=os.getenv('DASHBOARD_PASSWORD','')
-DEMO=os.getenv('DEMO_MODE','true').lower()=='true'
+HOME_TEST=os.getenv('HOME_TEST_MODE','false').lower()=='true'
+DEMO=HOME_TEST or os.getenv('DEMO_MODE','true').lower()=='true'
 AGENT=os.getenv('AGENT_URL','http://127.0.0.1:8091')
 TOKEN=os.getenv('AGENT_TOKEN','')
 STATIC=Path(__file__).parent/'static'
@@ -16,7 +17,7 @@ lock=threading.RLock()
 sessions={}
 failures={}
 monitor=None
-state={'tv':'Wiedergabe aus','message':'Demomodus – keine Hardware verbunden','active':False,'remaining_seconds':0}
+state={'tv':'Wiedergabe aus','message':'Heimtest – keine TV-/GPIO-Befehle' if HOME_TEST else 'Demomodus – keine Hardware verbunden','active':False,'remaining_seconds':0}
 DEMO_CAMERAS=[{'id':'demo-entry','name':'Haustür','model':'Beispielkamera','state':'CONNECTED'}, {'id':'demo-garden','name':'Garten','model':'Beispielkamera','state':'CONNECTED'},{'id':'demo-garage','name':'Garage','model':'Beispielkamera','state':'DISCONNECTED'}]
 
 def read(name,default):
@@ -136,8 +137,10 @@ class Handler(BaseHTTPRequestHandler):
                 if self.path=='/api/status':
                     result,available=playback_state()
                     c=config(); cred=credentials()
-                    return self.send({'demo':DEMO,'version':os.getenv('APP_VERSION','dev'),'state':result,'agent_available':available,'config':public_config(c),
-                        'telemetry':telemetry_status(),'protect':{'configured':bool(cred),'host':cred.get('host',''),'pinned':bool(cred.get('fingerprint'))}})
+                    return self.send({'demo':DEMO,'home_test':HOME_TEST,'version':os.getenv('APP_VERSION','dev'),'state':result,'agent_available':available,'config':public_config(c),
+                        'telemetry':telemetry_status(),'protect':{'configured':bool(cred),'host':cred.get('host',''),'pinned':bool(cred.get('fingerprint')),
+                        'auth_mode':cred.get('auth_mode','api_key') if cred else 'local','username':cred.get('username',''),
+                        'has_api_key':bool(cred.get('api_key')),'has_password':bool(cred.get('password'))}})
                 if self.path=='/api/update':
                     repo=config()['github_repo']
                     if not repo: raise ValueError('Zuerst ein GitHub-Repository in den Einstellungen eintragen.')
@@ -222,15 +225,26 @@ class Handler(BaseHTTPRequestHandler):
                     if not DEMO: raise ValueError('Beispielkameras sind nur im Demomodus verfügbar.')
                     pending={'demo':True,'cameras':DEMO_CAMERAS,'expires':time.time()+900}
                 else:
-                    host=normalize_host(body.get('host',''));old=credentials()
-                    key=body.get('api_key')
-                    if not key and host==old.get('host'): key=old.get('api_key')
-                    pin=body.get('fingerprint') or (old.get('fingerprint','') if host==old.get('host') else '')
-                    cred={'host':host,'api_key':key,'fingerprint':pin}
+                    cred=connection_credentials(body,credentials())
                     rows=Protect(cred).cameras()
                     pending={'demo':False,'credentials':cred,'cameras':rows,'expires':time.time()+900}
                 with lock: sessions[self.sid()]['pending']=pending
                 return self.send({'cameras':pending['cameras'],'demo':is_demo,'message':'Beispielkameras geladen.' if is_demo else 'Protect verbunden. Kamera auswählen.'})
+            if self.path=='/api/protect/test':
+                cred=credentials()
+                if not cred: raise ValueError('Zuerst einen NVR verbinden und eine Kamera übernehmen.')
+                start=time.monotonic()
+                client=Protect(cred)
+                rows=client.cameras()
+                c=config()
+                selected=next((row for row in rows if row['id']==c['camera_id']),None)
+                if not selected: raise ValueError('Die gespeicherte Kamera ist für diesen NVR-Zugang nicht verfügbar.')
+                image=client.snapshot(selected['id'])
+                stream=client.streams(selected['id'],c['quality'])
+                return self.send({'message':'NVR-Anmeldung, Kameraliste, Standbild und Stream-Adresse sind geprüft. Das Livebild am Fernseher separat prüfen.',
+                    'camera_name':selected['name'],'camera_state':selected['state'],'camera_count':len(rows),
+                    'snapshot_ok':bool(image),'stream_configured':bool(stream),'elapsed_ms':round((time.monotonic()-start)*1000),
+                    'hardware_tested':False})
             if self.path in ('/api/protect/select','/api/protect/snapshot'):
                 pending=sessions[self.sid()].get('pending')
                 if not pending or pending['expires']<time.time(): raise ValueError('Bitte Protect erneut verbinden. Die Einrichtung ist abgelaufen.')

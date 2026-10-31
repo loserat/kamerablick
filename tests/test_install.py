@@ -17,6 +17,12 @@ import session
 
 
 class Installation(unittest.TestCase):
+    def test_home_test_config_is_never_silently_used_for_hardware(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)/'project';root.mkdir()
+            (root/'.env').write_text('DASHBOARD_PASSWORD=existing-private-password\nAGENT_TOKEN='+'a'*32+'\nDEMO_MODE=false\nHOME_TEST_MODE=true\n')
+            with self.assertRaisesRegex(ValueError,'Heimtest'):
+                install.prepare(root,Path(temporary)/'home')
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / 'project'

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg?branch=main" alt="Automatische Prüfungen"></a>
-  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.1-285f45" alt="Aktuelle Version"></a>
+  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.2-285f45" alt="Aktuelle Version"></a>
   <img src="https://img.shields.io/badge/Raspberry_Pi-4B-285f45" alt="Zielgerät Raspberry Pi 4B">
   <img src="https://img.shields.io/badge/Status-fr%C3%BChe_Entwicklung-d5e6b5?labelColor=285f45" alt="Frühe Entwicklung">
 </p>
@@ -15,6 +15,7 @@
 </p>
 
 <p align="center">
+  <a href="docs/HEIMTEST.md">Zu Hause testen</a> ·
   <a href="docs/PI4.md">Pi einrichten</a> ·
   <a href="docs/INSTALLATION.md">Installieren</a> ·
   <a href="https://github.com/loserat/kamerablick/releases">Releases</a> ·
@@ -39,7 +40,7 @@ Große Kacheln für Kamera, kurze Hilfe und Ausschalten mit Bestätigung. Pfeile
 
 ### Für die Einrichtung
 
-Protect verbinden, Kamera auswählen, Standbild prüfen und übernehmen. Die Stream-Adresse wird automatisch ermittelt. Danach lassen sich Taster, Abschaltzeit und Kamerastatus zentral einstellen beziehungsweise prüfen.
+Am lokalen NVR mit UniFi-Benutzer oder API-Schlüssel anmelden, Kamera auswählen, Standbild prüfen und übernehmen. Die Stream-Adresse wird automatisch ermittelt. Danach lassen sich Taster, Abschaltzeit und Kamerastatus zentral einstellen beziehungsweise prüfen.
 
 ![Kamerablick-Dashboard mit Kameraeinrichtung und Status](docs/assets/dashboard.png)
 
@@ -49,7 +50,9 @@ Protect verbinden, Kamera auswählen, Standbild prüfen und übernehmen. Die Str
 
 | Funktion | Was sie macht |
 | --- | --- |
-| **UniFi Protect einrichten** | Adresse und API-Schlüssel eingeben, erreichbare Kamera und Bildqualität auswählen. |
+| **UniFi Protect einrichten** | Lokaler UniFi-Benutzer oder API-Schlüssel; Kamera und Bildqualität im Assistenten auswählen. |
+| **Manuell hinzufügen** | Einen vorhandenen RTSP-/RTSPS-Stream direkt als aktive Kamera speichern. |
+| **Zu Hause vortesten** | Echter NVR-Zugang und Standbild, getrennte Daten und simulierte TV-/GPIO-Aktionen. |
 | **Taster und TV** | GPIO-Taster, HDMI-CEC für Einschalten/Standby und einstellbare automatische Abschaltung. |
 | **Einfache TV-Bedienung** | Pfeiltasten, OK, Zurück; CEC-Empfänger für die TV-Fernbedienung vorbereitet. |
 | **Kamera und Ereignisse** | Verbindungsstatus sowie letzte empfangene Bewegung, Person und Fahrzeug mit erkennbarer Aktualität. |
@@ -59,14 +62,18 @@ Protect verbinden, Kamera auswählen, Standbild prüfen und übernehmen. Die Str
 
 Aktuell zeigt die TV-Ansicht **eine ausgewählte Kamera**. Der Videoplayer läuft direkt auf dem Pi; das Dashboard zeigt Status und Standbilder.
 
+## Erst zu Hause ausprobieren
+
+Der Heimtest verbindet deinen eigenen NVR, bevor Pi und Fernseher eingerichtet sind. Anmeldung, Kamerawahl, Standbild und eine erneute Verbindungsprüfung erfolgen in der Oberfläche. Es werden keine TV- oder GPIO-Befehle gesendet. [Heimtest starten →](docs/HEIMTEST.md)
+
 ## Auf deinem Pi starten
 
-Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit) mit Desktop**. Du brauchst außerdem eine SD-Karte, geeignetes Netzteil, Micro-HDMI-Kabel, einen CEC-fähigen TV und eine erreichbare Protect-Zentrale mit API-Schlüssel.
+Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit) mit Desktop**. Du brauchst außerdem eine SD-Karte, geeignetes Netzteil, Micro-HDMI-Kabel, einen CEC-fähigen TV und eine erreichbare Protect-Zentrale mit lokalem Benutzer oder API-Schlüssel.
 
 Zuerst [Betriebssystem, WLAN, Docker und benötigte Programme einrichten](docs/PI4.md). Anschließend als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.1 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.2 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -74,7 +81,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen zuerst ergänzen. Danach installieren:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.1
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.2
 ```
 
 Das öffentliche Image benötigt keine GitHub-Anmeldung. Docker wählt automatisch **ARM64**, **ARMv7** oder **AMD64** passend zum installierten System. Die Pi-Laufzeit wird aus derselben Image-Version übernommen.
@@ -98,6 +105,7 @@ Das Dashboard läuft ohne privilegierten Gerätezugriff und ohne Docker-Socket. 
 
 | Du möchtest … | Hier geht es weiter |
 | --- | --- |
+| Den eigenen NVR vorab zu Hause testen | [Heimtest und Anmeldung](docs/HEIMTEST.md) |
 | Den Pi 4B mit WLAN vorbereiten | [Pi-4-Schnellstart](docs/PI4.md) |
 | Installieren, Kamera verbinden oder aktualisieren | [Installation und Updates](docs/INSTALLATION.md) |
 | Eine TV-Fernbedienung prüfen | [Fernbedienung und Tastenempfang](docs/FERNBEDIENUNG.md) |

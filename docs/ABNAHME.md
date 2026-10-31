@@ -5,7 +5,7 @@ Stand: 31.10.2026. Die Software ist vorbereitet; das Goal ist wegen der noch off
 | Anforderung | Aktueller Nachweis | Noch erforderlich |
 |---|---|---|
 | Wiederholbare Pi-Installation | ARMv7-/ARM64-Voraussetzungenprüfung, Dateierhalt und Installation mit Image-Laufzeit automatisch getestet; CEC als eigener Hilfsprozess | Pi 4B mit 64-Bit-Desktop installieren und Geräteberechtigungen prüfen |
-| Dashboard mit Protect-Einrichtung | HTTP-Tests für Anmeldung, Kameraauswahl, Schlüsseltrennung und Zertifikatprüfung | Live-Verbindung zum Instant, Standbild und Stream prüfen |
+| Dashboard mit Protect-Einrichtung | HTTP-Tests für Anmeldung, Kameraauswahl, Schlüsseltrennung und Zertifikatprüfung; lokaler UniFi-Login mit TLS-Testkonsole, Sitzungsablauf und API-Schlüssel-Alternative geprüft | Live-Verbindung zum Instant, Standbild und Stream prüfen |
 | Große TV-Ansicht | Tastatur-/Browserprüfung und Navigationstests | Kioskstart und Browser-/Playerfokus auf dem Pi |
 | GPIO und TV-Standby | Steuerlogik in simulierten Hardwaretests | Verdrahteter Taster und echtes HDMI-CEC |
 | TV-Fernbedienung | CEC-Empfang und eigene TV-Zustellung implementiert; Dopplungs-/Ausfalltests und Browser mit simulierten Eingaben bestanden; echter ARM64-Trixie-Helfer ohne Adapter geprüft | Modell bestimmen; libCEC-Gerätezugriff, reale Tasten, Halten/Loslassen und Rückkehr aus mpv am Pi prüfen |
@@ -34,7 +34,7 @@ Nicht getestete Punkte bleiben offen. Weder ein grüner HTTP-Test noch eine Demo
 
 ## Aktueller Abschlussstand
 
-Die lokale Softwareprüfung umfasst 90 Python-Tests, 32 JavaScript-Prüfungen und ergänzende native ARM64-Abnahmen. Die ARMv7/32-Bit-Abnahme hat Anmeldung, Konfigurationsspeicherung, Neustart, Versionswechsel und Rückkehr unter Emulation geprüft. Der Streamtest prüft zehn Fälle mit echtem mpv und MediaMTX einschließlich Ausschalten während einer ausgefallenen Videoquelle. Es wird ausschließlich erzeugtes Testvideo ohne HDMI-Ausgabe genutzt. Die erzeugten JSON-Prüfberichte werden außerhalb des Git-Repositories archiviert; der Streambericht enthält die geprüften Quellprüfsummen. Die reproduzierbaren Prüfprogramme bleiben unter `tests/`.
+Die lokale Softwareprüfung umfasst 102 Python-Tests, 32 JavaScript-Prüfungen und ergänzende native ARM64-Abnahmen. Die ARMv7/32-Bit-Abnahme hat Anmeldung, Konfigurationsspeicherung, Neustart, Versionswechsel und Rückkehr unter Emulation geprüft. Der Streamtest prüft zehn Fälle mit echtem mpv und MediaMTX einschließlich Ausschalten während einer ausgefallenen Videoquelle. Es wird ausschließlich erzeugtes Testvideo ohne HDMI-Ausgabe genutzt. Die erzeugten JSON-Prüfberichte werden außerhalb des Git-Repositories archiviert; der Streambericht enthält die geprüften Quellprüfsummen. Die reproduzierbaren Prüfprogramme bleiben unter `tests/`.
 
 Für den Abschluss fehlen der Zugriff auf den nun benannten Pi 4B, das TV-Modell und der erreichbare Zielzugang zur Instant-Zentrale. Im Projekt ist keine verwaltete Geräteinstallation und kein produktiver Protect-Zugang vorhanden. Installation, WLAN am TV-Standort, grafischer Autostart nach Stromausfall, GPIO-Verdrahtung, IR-/CEC-Tasten und privater Fernzugriff müssen deshalb noch vor Ort beziehungsweise am Zielgerät geprüft werden.
 

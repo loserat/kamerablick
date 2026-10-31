@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.1
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.2
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -57,7 +57,7 @@ ssh -L 8088:127.0.0.1:8088 BENUTZER@PI-VPN-ADRESSE
 
 Danach im Browser `http://127.0.0.1:8088` öffnen. Das generierte Dashboard-Passwort steht auf dem Pi in `.env`. Diese Datei und ihren Inhalt nicht hochladen oder in Protokolle kopieren.
 
-Unter „Kamera einrichten“ die lokale Protect-Adresse und einen dort erstellten API-Schlüssel eintragen, Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
+Unter „Kamera einrichten“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Kamera manuell hinzufügen“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
 
 VPN und SSH sind getrennte Systemkomponenten und noch nicht eingerichtet. Es wird keine öffentliche Portfreigabe für das Dashboard oder Protect benötigt. Die SSH-Weiterleitung und der tatsächliche Fernzugriff werden später von einem anderen Netzwerk aus getestet.
 
@@ -89,7 +89,7 @@ Neuversuche warten mit zunehmendem Abstand von 5 bis 60 Sekunden. Nach mindesten
 Nach Veröffentlichung einer passenden Version:
 
 ```sh
-./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.1
+./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.2
 ```
 
 Es werden Dashboard und mitgelieferter Pi-Dienst gemeinsam aktualisiert. Die gewählte Image-Version bestimmt auch ihre zusätzlichen Hilfsmodule; der Updater übernimmt diese nach einer Pfad- und Quellprüfung. Einstellungen, Protect-Zugang und TV-Freigaben sowie vorhandene Pi-Konfiguration werden gesichert. Der tatsächliche vorherige Container wird als lokales Rückfallimage erhalten. Bei fehlgeschlagenem Start oder Health-Test werden altes Image, alte Pi-Laufzeit und gesicherte Daten wiederhergestellt.

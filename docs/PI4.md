@@ -39,7 +39,7 @@ docker compose version
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.1 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.2 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -47,7 +47,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen aus der Prüfung zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.1
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.2
 ```
 
 Das öffentliche Image enthält bereits **ARM64**; Docker wählt diese Variante automatisch. Für den Wechsel vom Pi 2B zum Pi 4B ist kein neues Anwendungsimage nötig. Der Pi muss den Container nicht selbst bauen.
@@ -64,10 +64,10 @@ ssh -L 8088:127.0.0.1:8088 BENUTZER@kamerablick.local
 
 Den gewählten Benutzernamen einsetzen; falls der Name nicht aufgelöst wird, die lokale IP-Adresse des Pi verwenden. Danach am eigenen Rechner `http://127.0.0.1:8088` öffnen. Das zufällig erzeugte Dashboard-Passwort steht auf dem Pi in `~/kamerablick/.env`.
 
-Protect-Adresse und API-Schlüssel im Einrichtungsdialog hinterlegen, Kamera auswählen und Standbild sowie Livebild prüfen. Zunächst einen H.264-Stream mit niedriger oder mittlerer Qualität testen und die Qualität am Gerät erhöhen. Flüssige Wiedergabe und Grafikbeschleunigung sind noch nicht am echten Pi 4B verifiziert.
+Protect-Adresse und lokalen UniFi-Benutzer oder API-Schlüssel im Einrichtungsdialog hinterlegen, Kamera auswählen und Standbild sowie Livebild prüfen. Der lokale Login unterstützt zusätzlich einen API-Schlüssel für moderne Streams und laufende Ereignisse. Details und der getrennte Heimtest stehen in [HEIMTEST.md](HEIMTEST.md). Zunächst einen H.264-Stream mit niedriger oder mittlerer Qualität testen und die Qualität am Gerät erhöhen. Flüssige Wiedergabe und Grafikbeschleunigung sind noch nicht am echten Pi 4B verifiziert.
 
 Der Zugriff von außerhalb benötigt zusätzlich einen privaten VPN-Zugang. WLAN und aktiviertes SSH allein stellen diesen Fernzugriff noch nicht bereit. Weitere Schritte, Updates und Tasteranschluss: [Installation](INSTALLATION.md), [Geräteabnahme](ABNAHME.md).
 
 ## Prüfstand
 
-Version v0.1.1 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.
+Version v0.1.2 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.

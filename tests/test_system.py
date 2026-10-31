@@ -111,6 +111,31 @@ class ApiTest(unittest.TestCase):
         with patch.object(server,'agent',side_effect=ValueError('offline')):
             self.assertEqual(self.call('/api/config',{'gpio_pin':18})[0],400)
         self.assertEqual(server.config()['gpio_pin'],17)
+    def test_local_nvr_setup_keeps_secrets_private_and_tests_connection_in_ui(self):
+        cameras=[{'id':'local-1','name':'Testkamera','model':'G5','state':'CONNECTED'}]
+        with patch.object(server,'Protect') as client:
+            client.return_value.cameras.return_value=cameras
+            client.return_value.streams.return_value='rtsps://192.0.2.20/private-alias'
+            client.return_value.snapshot.return_value=b'\xff\xd8image'
+            body={'host':'192.0.2.20','auth_mode':'local','username':'local-user','password':'local-private-password'}
+            code,result=self.call('/api/protect/connect',body)
+            self.assertEqual(code,200);self.assertNotIn('password',json.dumps(result))
+            self.assertEqual(server.credentials(),{})
+            self.assertEqual(self.call('/api/protect/select',{'camera_id':'local-1','quality':'medium'})[0],200)
+            self.assertEqual(server.credentials()['password'],'local-private-password')
+            status=self.call('/api/status')[1]
+            self.assertEqual(status['protect']['auth_mode'],'local')
+            self.assertTrue(status['protect']['has_password'])
+            self.assertNotIn('local-private-password',json.dumps(status))
+            self.assertNotIn('private-alias',json.dumps(status))
+            self.assertEqual((server.DATA/'protect.json').stat().st_mode&0o777,0o600)
+            self.assertEqual(self.call('/api/protect/test',{},token='invalid')[0],401)
+            code,result=self.call('/api/protect/test',{})
+            self.assertEqual(code,200);self.assertTrue(result['snapshot_ok'])
+            self.assertFalse(result['hardware_tested'])
+            self.assertNotIn('private-alias',json.dumps(result))
+            self.assertEqual(self.call('/api/protect/connect',body|{'password':''})[0],200)
+            self.assertEqual(client.call_args.args[0]['password'],'local-private-password')
     def test_no_saved_key_reuse_for_different_host(self):
         server.save('protect.json',{'host':'https://192.168.1.20','api_key':'sensitive-key'})
         code,_=self.call('/api/protect/connect',{'host':'192.168.1.21'})

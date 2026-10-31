@@ -154,6 +154,8 @@ def prepare(root, home, image=None, runtime_source=None):
                 raise ValueError('Vorhandene .env zuerst mit echten lokalen Zugangswerten vervollständigen: ' + key)
         if settings.get('DEMO_MODE', 'true').lower() != 'false':
             raise ValueError('Vorhandene .env steht noch im Demomodus. DEMO_MODE bewusst auf false setzen.')
+        if settings.get('HOME_TEST_MODE', 'false').lower() == 'true':
+            raise ValueError('Vorhandene .env steht noch im Heimtest. Für den Pi-Echtbetrieb einen eigenen Installationsordner verwenden.')
         if image and (settings.get('OMA_TV_IMAGE')!=image or settings.get('APP_VERSION')!=defaults['APP_VERSION']):
             raise ValueError('Vorhandene Image-Version bleibt erhalten. Für einen Versionswechsel pi/update.sh verwenden.')
     settings = defaults | settings

@@ -51,7 +51,43 @@ def certificate_fingerprint(host):
         with context.wrap_socket(sock, server_hostname=parts.hostname) as tls:
             return hashlib.sha256(tls.getpeercert(binary_form=True)).hexdigest()
 
-class Protect:
+def connection_credentials(body, previous):
+    """Reuse secrets only for the same console, mode and local account."""
+    host = normalize_host(body.get('host', ''))
+    mode = body.get('auth_mode', 'api_key')
+    if mode not in ('api_key', 'local'):
+        raise ProtectError('Bitte eine gültige Anmeldeart auswählen.', 400)
+    same_host = host == previous.get('host')
+    same_mode = same_host and mode == previous.get('auth_mode', 'api_key')
+    for field in ('api_key', 'password', 'fingerprint'):
+        if field in body and not isinstance(body[field], str):
+            raise ProtectError('Zugangsdaten bitte als Text eingeben.', 400)
+    result = {'host': host, 'auth_mode': mode,
+        'fingerprint': body.get('fingerprint') or (previous.get('fingerprint', '') if same_host else '')}
+    if mode == 'local':
+        username = body.get('username', '')
+        if not isinstance(username, str):
+            raise ProtectError('Bitte den lokalen UniFi-Benutzer eingeben.', 400)
+        username = username.strip() or (previous.get('username', '') if same_mode else '')
+        same_user = same_mode and username == previous.get('username')
+        result.update(username=username, password=body.get('password') or (previous.get('password', '') if same_user else ''))
+    reuse_key = same_mode and (mode != 'local' or same_user)
+    result['api_key'] = body.get('api_key') or (previous.get('api_key', '') if reuse_key else '')
+    return result
+
+
+def Protect(credentials):
+    """Keep one client interface for local-account and Integration API access."""
+    mode = credentials.get('auth_mode', 'api_key')
+    if mode == 'local':
+        from local_protect import LocalProtect
+        return LocalProtect(credentials)
+    if mode != 'api_key':
+        raise ProtectError('Unbekannte Protect-Anmeldeart.', 400)
+    return IntegrationProtect(credentials)
+
+
+class IntegrationProtect:
     def __init__(self, credentials):
         self.host = normalize_host(credentials.get('host', ''))
         self.key = credentials.get('api_key', '')
