@@ -73,6 +73,7 @@ function renderMaintenance(support){
   if(!updateSupport)return;
   const job=updateSupport.job;
   $('#maintenance-support').textContent=updateSupport.message||'';
+  renderLastUpdate(job);
   $('#update-setup-help').hidden=!!(updateSupport.available&&updateSupport.persistent)||!!latest?.demo;
   $('#install-update').hidden=!updateRelease?.available;
   $('#install-update').disabled=!(updateRelease?.available&&updateSupport.available&&updateSupport.persistent&&!job?.busy);
@@ -80,12 +81,23 @@ function renderMaintenance(support){
   if(token&&page()==='maintenance'&&Date.now()-lastReleaseCheck>300000)queueMicrotask(checkUpdates);
 }
 function renderUpdateJob(job){
+  renderLastUpdate(job);
   $('#update-job').hidden=false;
   $('#update-job-title').textContent=job.phase==='complete'?'Neue Version ist bereit.':job.phase==='rolled_back'?'Vorherige Version wieder aktiv.':job.phase==='failed'||job.phase==='recovery_failed'?'Aktualisierung benötigt Aufmerksamkeit.':'Kamerablick wird aktualisiert.';
   $('#update-job-message').textContent=job.message;
   $('#update-progress-bar').hidden=!job.busy;
   $('#update-job-note').textContent=job.busy?'Du kannst den Browser schließen. Der Auftrag läuft auf dem Pi weiter.':'Bei einem Neustart bitte erneut am Dashboard anmelden. Kamera, Taster und TV anschließend prüfen.';
   if(!job.busy&&(updateWatch||completedUpdateJob!==job.id)){completedUpdateJob=job.id;sessionStorage.removeItem('kamerablick-update-watch');updateWatch=null;updateRelease=null;$('#install-update').hidden=true}
+}
+function renderLastUpdate(job){
+  const outcomes={complete:'Erfolgreich abgeschlossen',rolled_back:'Vorherige Version wiederhergestellt',failed:'Update nicht übernommen',recovery_failed:'Wiederherstellung benötigt Hilfe'};
+  const outcome=outcomes[job?.phase];
+  $('#last-update').hidden=!outcome;
+  if(!outcome)return;
+  const date=new Date(Number(job.updated_at)*1000);
+  const when=Number.isFinite(job.updated_at)&&job.updated_at>0&&!Number.isNaN(date.getTime())?date.toLocaleString('de-DE',{timeZone:'Europe/Berlin'}):'Zeitpunkt nicht verfügbar';
+  const versions=job.previous_version&&job.version?job.previous_version+' → '+job.version:job.version||'Versionswechsel';
+  $('#last-update-result').textContent=versions+' · '+outcome+' · '+when;
 }
 async function watchUpdate(){
   if(updateWatching||!updateWatch)return;

@@ -11,9 +11,9 @@ Als bisheriger Kamerablick-Benutzer auf dem Pi:
 ```sh
 cd ~/kamerablick
 git fetch origin --tags
-git checkout v0.1.4
+git checkout v0.1.5
 sudo loginctl enable-linger "$USER"
-python3 pi/activate_browser_updates.py --image ghcr.io/loserat/kamerablick:v0.1.4
+python3 pi/activate_browser_updates.py --image ghcr.io/loserat/kamerablick:v0.1.5
 ```
 
 Git erhält lokale Daten und verweigert einen Wechsel, der geänderte Quelldateien überschreiben würde. Bei einer solchen Meldung die eigenen Änderungen zuerst prüfen. Kein `git reset --hard` und keine Neuinstallation mit gelöschten Daten verwenden.
@@ -41,6 +41,8 @@ Der Installer richtet den eigenen Wartungsdienst automatisch ein. Er läuft unab
 5. Nach dem Neustart bei Bedarf erneut mit dem bisherigen Dashboard-Passwort anmelden. Kamera, TV und Taster zusätzlich am Gerät prüfen.
 
 Der sichtbare Fortschritt zeigt die tatsächlichen Schritte: Herunterladen, Sicherung, Installation, Startprüfung oder Wiederherstellung. Er zeigt keine geschätzten Download-Prozentwerte. Eine begrenzte Lesefreigabe erhält den Statuszugriff nach einem Dashboard-Neustart; sie erlaubt keine Einstellungen oder weiteren Updates.
+
+Ab v0.1.5 zeigt **Letzter Updateversuch** nach Abschluss zusätzlich den Versionswechsel, das Ergebnis und den Zeitpunkt in deutscher Zeit an. Die Anzeige stammt aus dem gespeicherten Pi-Auftrag und bleibt nach erneuter Anmeldung oder Neuladen erhalten. Ein fehlgeschlagenes Update wird ausdrücklich als Fehler oder Wiederherstellung angezeigt. Sobald ein neuer Auftrag läuft, wird dessen Fortschritt angezeigt; es wird keine Liste älterer Aufträge geführt.
 
 Im Laptop-Heimtest werden keine Pi-Updates installiert. Auch Vorschauversionen, andere Containerquellen und ein Zurücksetzen auf beliebige alte Versionen sind über diesen Knopf nicht vorgesehen. Für den normalen Updateweg gilt die feste Quelle `loserat/kamerablick`.
 
