@@ -61,6 +61,8 @@ from pathlib import Path
 args=sys.argv[1:]
 if 'is-active' in args:raise SystemExit(3)
 if 'show' in args:
+ if '--property=LoadState' in args:
+  print('loaded');raise SystemExit(0)
  unit=args[args.index('show')+1]
  try:
   pid=int(Path('/fixture/units',unit).read_text());state=Path('/proc',str(pid),'stat').read_text().split()[2]
@@ -207,15 +209,26 @@ try:
  inside("from pathlib import Path;import json\np=Path('/fixture/project/backups/update-state.json');d=json.loads(p.read_text());d['phase']='applying';p.write_text(json.dumps(d))\np=Path('/fixture/project/.maintenance/job.json');d=json.loads(p.read_text());d['phase']='verifying';p.write_text(json.dumps(d))\nPath('/fixture/restart').write_text('restart')")
  wait_job(started['watch'],'rolled_back')
  check('interrupted transaction is recovered by the independent maintenance bridge')
+ inside("from pathlib import Path;import json\np=Path('/fixture/project/backups/update-state.json');d=json.loads(p.read_text());d['phase']='rollback_failed';p.write_text(json.dumps(d))\np=Path('/fixture/project/.maintenance/job.json');d=json.loads(p.read_text());d.update(phase='recovery_failed',recovery_attempts=1);p.write_text(json.dumps(d))")
+ inside("import sys\nfrom pathlib import Path\nsys.path.insert(0,'/fixture/project/pi')\nimport reinstall,install\ninstall.preflight=lambda root:[{'ok':True}]\nbackup=reinstall.reinstall(Path('/fixture/project'),Path('/fixture/home'),'ghcr.io/loserat/kamerablick:v9.9.91')\nassert (backup/'previous-update-state.json').exists()\nassert (backup/'previous-job.json').exists()")
+ restored=api("print(json.dumps(call('status',token=admin)))")
+ assert restored['version']=='v9.9.91' and restored['config']['camera_name']=='Testkamera'
+ assert restored['maintenance']['available'] and restored['maintenance']['persistent']
+ assert api("print(json.dumps(call('tv/pair',{},admin)))")['token']==seed['access']
+ inside("import subprocess\ncode=\"import server;assert server.credentials()['api_key']=='test-private-key'\"\nsubprocess.run(['docker','compose','exec','-T','dashboard','python','-c',code],cwd='/fixture/project',check=True)")
+ check('cold reinstall archives interrupted transaction and preserves camera, private credentials and TV access')
  report['result']='passed'
 finally:
  logs=run(['docker','logs',host],ok=False).stdout
  if report.get('result')!='passed' and logs:print(logs[-5000:],flush=True)
  backups=inside("from pathlib import Path;import json;print(json.dumps([p.name for p in Path('/fixture/project/backups').glob('*') if p.is_dir()]))",ok=False)
+ retained=inside("from pathlib import Path;import json;print(json.dumps([json.loads(p.read_text())['retained_image'] for p in Path('/fixture/project/backups').glob('neuinstallation-*/reinstall.json')]))",ok=False)
  inside("import subprocess;subprocess.run(['docker','compose','down','--volumes','--timeout','5'],cwd='/fixture/project')",ok=False)
  run(['docker','rm','-f',host],ok=False);run(['docker','volume','rm',shim],ok=False)
  if backups.returncode==0:
   for stamp in json.loads(backups.stdout):run(['docker','image','rm','oma-tv-rollback:'+stamp],ok=False)
+ if retained.returncode==0:
+  for image in json.loads(retained.stdout):run(['docker','image','rm',image],ok=False)
  for image in [*images,host_image,base]:run(['docker','image','rm',image],ok=False)
  print(json.dumps(report,indent=2),flush=True)
  if args.control:

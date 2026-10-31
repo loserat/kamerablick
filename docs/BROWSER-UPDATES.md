@@ -22,6 +22,21 @@ Der Übergang aktualisiert eine ältere verwaltete Installation über ihren Sich
 
 Danach die Oberfläche neu laden und mit dem bisherigen Dashboard-Passwort anmelden. Unter **Wartung** muss „Bereit für Updates aus der Oberfläche“ stehen. Ist ein Fehler aufgetreten, dessen Meldung prüfen und den Übergang erneut ausführen; keine Konfiguration löschen.
 
+## Vorhandene Installation erneut einrichten
+
+Wenn ein älterer Updateversuch nicht abgeschlossen wurde, kann der Neuinstallationshelfer aus dem aktuellen `main`-Quellstand die vorhandene Installation erneut einrichten:
+
+```sh
+sudo loginctl enable-linger "$USER"
+python3 pi/reinstall.py --image ghcr.io/loserat/kamerablick:v0.1.4
+```
+
+Für einen anschließenden Browser-Updatetest ist v0.1.4 als Ausgangsversion vorgesehen; danach v0.1.5 unter Wartung installieren. Für eine direkte Einrichtung auf v0.1.5 diese Image-Version angeben.
+
+Der Helfer benötigt einen erreichbaren bisherigen Dashboard-Container für die Datensicherung. Er sichert Einstellungen, Zugangswerte, bisherige Dienstdateien und das tatsächlich verwendete Image unter `backups/neuinstallation-…`. Einen offenen Updatezustand und den letzten Auftrag verschiebt er in diese private Sicherung. Danach richtet er Container und verwaltete Pi-Dienste aus dem gewählten offiziellen Image erneut ein. Das bestehende Docker-Datenvolume, Passwort und die Kameraeinrichtung bleiben erhalten. Er löscht keine Datenvolumes und räumt keine alten Sicherungen auf.
+
+Der Vorgang meldet Erfolg erst nach der Prüfung von Dashboard, Wartungsdienst und Pi-Dienst. Schlägt diese Prüfung fehl, bleibt die Sicherung erhalten und die Neuinstallation gilt als unvollständig; es wird keine automatische Rückkehr aus diesem Neuinstallationsweg zugesagt. Die Fehlermeldung und den ausgegebenen Sicherungspfad zur weiteren Diagnose aufbewahren. Raspberry Pi OS und eigene fremde Dienstdateien werden nicht ersetzt.
+
 ## Neue Pi-Installation
 
 Vor dem normalen Installer einmalig ausführen:
