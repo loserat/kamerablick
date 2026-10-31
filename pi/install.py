@@ -145,7 +145,7 @@ def prepare(root, home, image=None, runtime_source=None):
     env_path = root / '.env'
     settings = read_env(env_path)
     defaults = {'DASHBOARD_PASSWORD': secrets.token_urlsafe(24), 'AGENT_TOKEN': secrets.token_urlsafe(32),
-        'DEMO_MODE': 'false', 'BIND': '127.0.0.1', 'PORT': '8088', 'AGENT_URL': 'http://127.0.0.1:8091', 'APP_VERSION': 'dev'}
+        'DEMO_MODE': 'false', 'BIND': '0.0.0.0', 'PORT': '8088', 'AGENT_URL': 'http://127.0.0.1:8091', 'APP_VERSION': 'dev'}
     if image:
         defaults.update(OMA_TV_IMAGE=image,APP_VERSION=image.rsplit(':',1)[1])
     if env_path.exists():
@@ -161,8 +161,10 @@ def prepare(root, home, image=None, runtime_source=None):
     settings = defaults | settings
     if not re.fullmatch(r'[A-Za-z0-9_-]{24,256}', settings['AGENT_TOKEN']):
         raise ValueError('AGENT_TOKEN: 24 bis 256 Buchstaben, Ziffern, Unterstrich oder Bindestrich verwenden')
-    if settings['BIND'] != '127.0.0.1' or settings['AGENT_URL'] != 'http://127.0.0.1:8091':
-        raise ValueError('Die verwaltete Installation erwartet ausschließlich lokale Dienste.')
+    if settings['BIND'] not in ('127.0.0.1', '0.0.0.0'):
+        raise ValueError('Dashboard-Bindung muss 127.0.0.1 (nur lokal) oder 0.0.0.0 (Heimnetz) sein.')
+    if settings['AGENT_URL'] != 'http://127.0.0.1:8091':
+        raise ValueError('Der interne Pi-Dienst muss ausschließlich lokal erreichbar bleiben.')
     if not settings['PORT'].isdigit() or not 1024 <= int(settings['PORT']) <= 65535:
         raise ValueError('PORT muss zwischen 1024 und 65535 liegen')
     for key, value in settings.items():
@@ -238,6 +240,11 @@ def main():
         raise SystemExit('Installation nicht abgeschlossen. Voraussetzungen und Dateien prüfen. ' + (str(error) if isinstance(error, ValueError) else 'Dienststart fehlgeschlagen.'))
     print('Dateien eingerichtet. Bei der nächsten Desktop-Anmeldung startet Kamerablick automatisch.')
     print('Dashboard-Passwort steht ausschließlich in der lokalen .env. Protect im Dashboard einrichten.')
+    installed = read_env(root / '.env')
+    if installed['BIND'] == '0.0.0.0':
+        print('Dashboard im Heimnetz: http://PI-IP:' + installed['PORT'] + ' (PI-IP durch die Adresse des Raspberry Pi ersetzen).')
+    else:
+        print('Dashboard nur lokal erreichbar; für den Browser einen SSH-Tunnel verwenden.')
     print('Keine Änderungen an Desktop-Autologin, SSH, VPN oder Router wurden vorgenommen.')
 
 

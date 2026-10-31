@@ -53,6 +53,12 @@ class UpdateFlow(unittest.TestCase):
         self.assertEqual(state['phase'],'complete')
         backup=Path(state['backup'])/'data.json'
         self.assertIn('test-secret',backup.read_text());self.assertEqual(backup.stat().st_mode&0o777,0o600)
+        self.assertEqual(install.read_env(self.root/'.env')['BIND'],'0.0.0.0')
+    def test_update_preserves_explicit_loopback_binding(self):
+        env=self.root/'.env'
+        env.write_text(env.read_text().replace('BIND=0.0.0.0','BIND=127.0.0.1'))
+        update.update('ghcr.io/example/oma-tv:v1.2.0')
+        self.assertEqual(install.read_env(env)['BIND'],'127.0.0.1')
     def test_start_failure_persists_previous_image_and_runtime(self):
         self.fail_start=True
         with self.assertRaisesRegex(RuntimeError,'vorherige Version'): update.update('ghcr.io/example/oma-tv:v1.2.0')

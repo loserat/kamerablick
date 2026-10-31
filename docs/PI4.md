@@ -39,7 +39,7 @@ docker compose version
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.2 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.3 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -47,7 +47,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen aus der Prüfung zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.2
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.3
 ```
 
 Das öffentliche Image enthält bereits **ARM64**; Docker wählt diese Variante automatisch. Für den Wechsel vom Pi 2B zum Pi 4B ist kein neues Anwendungsimage nötig. Der Pi muss den Container nicht selbst bauen.
@@ -56,13 +56,9 @@ Das Dashboard läuft in Docker. Taster, HDMI-CEC, Videoplayer und TV-Browser lau
 
 ## 4. Kamera und Wartungszugang einrichten
 
-Vom eigenen Rechner im selben Heimnetz:
+Im Browser auf deinem Rechner oder Smartphone im selben Heimnetz **`http://PI-IP:8088`** öffnen. `PI-IP` durch die WLAN-/LAN-Adresse des Raspberry Pi ersetzen. Bei der neuen Pi-Installation ist dafür kein SSH-Tunnel nötig. Das Dashboard verlangt sein zufällig erzeugtes Passwort aus `~/kamerablick/.env`.
 
-```sh
-ssh -L 8088:127.0.0.1:8088 BENUTZER@kamerablick.local
-```
-
-Den gewählten Benutzernamen einsetzen; falls der Name nicht aufgelöst wird, die lokale IP-Adresse des Pi verwenden. Danach am eigenen Rechner `http://127.0.0.1:8088` öffnen. Das zufällig erzeugte Dashboard-Passwort steht auf dem Pi in `~/kamerablick/.env`.
+Vorhandene Installationen behalten ihre bisherige Bindung. Die Umstellung auf direkten Heimnetzzugriff und die Alternative per SSH-Tunnel stehen unter [Installation](INSTALLATION.md#3-kamera-und-privaten-wartungszugang-einrichten). Für den direkten HTTP-Zugriff ein vertrauenswürdiges Heimnetz verwenden; es wird keine Router-Portfreigabe benötigt.
 
 Protect-Adresse und lokalen UniFi-Benutzer oder API-Schlüssel im Einrichtungsdialog hinterlegen, Kamera auswählen und Standbild sowie Livebild prüfen. Der lokale Login unterstützt zusätzlich einen API-Schlüssel für moderne Streams und laufende Ereignisse. Details und der getrennte Heimtest stehen in [HEIMTEST.md](HEIMTEST.md). Zunächst einen H.264-Stream mit niedriger oder mittlerer Qualität testen und die Qualität am Gerät erhöhen. Flüssige Wiedergabe und Grafikbeschleunigung sind noch nicht am echten Pi 4B verifiziert.
 
@@ -70,4 +66,4 @@ Der Zugriff von außerhalb benötigt zusätzlich einen privaten VPN-Zugang. WLAN
 
 ## Prüfstand
 
-Version v0.1.2 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.
+Version v0.1.3 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg?branch=main" alt="Automatische Prüfungen"></a>
-  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.2-285f45" alt="Aktuelle Version"></a>
+  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.3-285f45" alt="Aktuelle Version"></a>
   <img src="https://img.shields.io/badge/Raspberry_Pi-4B-285f45" alt="Zielgerät Raspberry Pi 4B">
   <img src="https://img.shields.io/badge/Status-fr%C3%BChe_Entwicklung-d5e6b5?labelColor=285f45" alt="Frühe Entwicklung">
 </p>
@@ -58,7 +58,7 @@ Am lokalen NVR mit UniFi-Benutzer oder API-Schlüssel anmelden, Kamera auswähle
 | **Kamera und Ereignisse** | Verbindungsstatus sowie letzte empfangene Bewegung, Person und Fahrzeug mit erkennbarer Aktualität. |
 | **Wiedergabe überwachen** | Festhängende Streams erkennen und mit wachsendem Abstand erneut verbinden. |
 | **Versionierte Updates** | Container und Pi-Dienste gemeinsam wechseln, Einstellungen sichern und nach Startfehlern zurückkehren. |
-| **Privat warten** | Geschütztes Dashboard über SSH/VPN erreichen; VPN wird separat eingerichtet. |
+| **Im Browser öffnen** | Passwortgeschütztes Dashboard direkt über die Pi-IP im Heimnetz öffnen. Fernzugriff über ein separat eingerichtetes VPN. |
 
 Aktuell zeigt die TV-Ansicht **eine ausgewählte Kamera**. Der Videoplayer läuft direkt auf dem Pi; das Dashboard zeigt Status und Standbilder.
 
@@ -73,7 +73,7 @@ Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit)
 Zuerst [Betriebssystem, WLAN, Docker und benötigte Programme einrichten](docs/PI4.md). Anschließend als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.2 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.3 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -81,10 +81,12 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen zuerst ergänzen. Danach installieren:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.2
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.3
 ```
 
 Das öffentliche Image benötigt keine GitHub-Anmeldung. Docker wählt automatisch **ARM64**, **ARMv7** oder **AMD64** passend zum installierten System. Die Pi-Laufzeit wird aus derselben Image-Version übernommen.
+
+Nach der Installation im selben Heimnetz **`http://PI-IP:8088`** im Browser öffnen. Das neu erzeugte Dashboard-Passwort steht auf dem Pi in `~/kamerablick/.env`. Der Laptop-Heimtest bleibt standardmäßig auf dem eigenen Rechner erreichbar.
 
 ## So arbeiten die Teile zusammen
 
@@ -99,7 +101,7 @@ flowchart LR
     Player -->|"HDMI-Bild"| TV
 ```
 
-Das Dashboard läuft ohne privilegierten Gerätezugriff und ohne Docker-Socket. GPIO, CEC, Kiosk-Browser und Videoplayer laufen als lokale Pi-Dienste. Zugangswerte und Einstellungen bleiben in `.env` beziehungsweise im lokalen Datenvolume. Der Dashboard-Port bindet standardmäßig nur an `127.0.0.1`.
+Das Dashboard läuft ohne privilegierten Gerätezugriff und ohne Docker-Socket. GPIO, CEC, Kiosk-Browser und Videoplayer laufen als lokale Pi-Dienste. Zugangswerte und Einstellungen bleiben in `.env` beziehungsweise im lokalen Datenvolume. Eine neue Pi-Installation stellt das passwortgeschützte Dashboard im Heimnetz unter `http://PI-IP:8088` bereit. Der interne TV-/GPIO-Dienst bleibt auf `127.0.0.1`. Für ausschließlich lokalen Dashboard-Zugriff ist `BIND=127.0.0.1` weiterhin möglich. Bestehende Einstellungen werden erhalten.
 
 ## Dokumentation
 

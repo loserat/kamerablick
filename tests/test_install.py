@@ -17,6 +17,26 @@ import session
 
 
 class Installation(unittest.TestCase):
+    def test_dashboard_lan_default_and_loopback_opt_out_preserve_private_agent(self):
+        settings=install.prepare(self.root,self.home)
+        self.assertEqual(settings['BIND'],'0.0.0.0')
+        self.assertEqual(settings['AGENT_URL'],'http://127.0.0.1:8091')
+        env=self.root/'.env'
+        env.write_text(env.read_text().replace('BIND=0.0.0.0','BIND=127.0.0.1'))
+        self.assertEqual(install.prepare(self.root,self.home)['BIND'],'127.0.0.1')
+        env.write_text(env.read_text().replace('BIND=127.0.0.1','BIND=0.0.0.0'))
+        self.assertEqual(install.prepare(self.root,self.home)['BIND'],'0.0.0.0')
+        env.write_text(env.read_text().replace('AGENT_URL=http://127.0.0.1:8091','AGENT_URL=http://0.0.0.0:8091'))
+        with self.assertRaisesRegex(ValueError,'interne Pi-Dienst'):
+            install.prepare(self.root,self.home)
+
+    def test_specific_interface_binding_cannot_break_local_health_checks(self):
+        install.prepare(self.root,self.home)
+        env=self.root/'.env'
+        env.write_text(env.read_text().replace('BIND=0.0.0.0','BIND=192.0.2.20'))
+        with self.assertRaisesRegex(ValueError,'Dashboard-Bindung'):
+            install.prepare(self.root,self.home)
+
     def test_home_test_config_is_never_silently_used_for_hardware(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary)/'project';root.mkdir()

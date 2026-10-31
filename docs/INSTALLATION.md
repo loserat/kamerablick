@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.2
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.3
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -49,13 +49,26 @@ Nach Ab- und erneuter Anmeldung am Desktop startet die TV-Ansicht automatisch. D
 
 ## 3. Kamera und privaten Wartungszugang einrichten
 
-Das Dashboard bindet an `127.0.0.1:8088`. Für den Zugriff von deinem Rechner über den vorhandenen privaten VPN-/SSH-Weg:
+Eine neue Pi-Installation ist im selben Heimnetz direkt unter **`http://PI-IP:8088`** erreichbar. Die WLAN-/LAN-Adresse des Raspberry Pi verwenden; ein SSH-Tunnel ist dafür nicht nötig. Das neu erzeugte Dashboard-Passwort steht auf dem Pi in `.env`.
+
+Bei einer vorhandenen Installation bleibt die gespeicherte Einstellung erhalten. Für direkten Zugriff auf dem Pi:
 
 ```sh
-ssh -L 8088:127.0.0.1:8088 BENUTZER@PI-VPN-ADRESSE
+cd ~/kamerablick
+cp -p .env ".env.before-lan-$(date +%Y%m%d-%H%M%S)"
+sed -i 's/^BIND=.*/BIND=0.0.0.0/' .env
+docker compose up -d --no-build --wait --wait-timeout 120
 ```
 
-Danach im Browser `http://127.0.0.1:8088` öffnen. Das generierte Dashboard-Passwort steht auf dem Pi in `.env`. Diese Datei und ihren Inhalt nicht hochladen oder in Protokolle kopieren.
+Die Datei und Sicherung enthalten private Zugangswerte und bleiben lokal. Die Öffnung gilt nur für das Dashboard; `AGENT_URL` bleibt `http://127.0.0.1:8091`.
+
+HTTP überträgt die Anmeldung unverschlüsselt. Den direkten Aufruf nur im vertrauenswürdigen Heimnetz nutzen. Für ausschließlich lokalen Zugriff stattdessen `BIND=127.0.0.1` setzen und den Container auf dieselbe Weise neu starten. Auf dem eigenen Rechner kann dann weiterhin ein SSH-Tunnel verwendet werden:
+
+```sh
+ssh -L 8099:127.0.0.1:8088 BENUTZER@PI-ADRESSE
+```
+
+Anschließend `http://127.0.0.1:8099` öffnen. Es ist keine öffentliche Portfreigabe vorgesehen.
 
 Unter „Kamera einrichten“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Kamera manuell hinzufügen“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
 
@@ -89,7 +102,7 @@ Neuversuche warten mit zunehmendem Abstand von 5 bis 60 Sekunden. Nach mindesten
 Nach Veröffentlichung einer passenden Version:
 
 ```sh
-./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.2
+./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.3
 ```
 
 Es werden Dashboard und mitgelieferter Pi-Dienst gemeinsam aktualisiert. Die gewählte Image-Version bestimmt auch ihre zusätzlichen Hilfsmodule; der Updater übernimmt diese nach einer Pfad- und Quellprüfung. Einstellungen, Protect-Zugang und TV-Freigaben sowie vorhandene Pi-Konfiguration werden gesichert. Der tatsächliche vorherige Container wird als lokales Rückfallimage erhalten. Bei fehlgeschlagenem Start oder Health-Test werden altes Image, alte Pi-Laufzeit und gesicherte Daten wiederhergestellt.
