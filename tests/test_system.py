@@ -29,6 +29,23 @@ class ApiTest(unittest.TestCase):
                      headers={'Authorization':'Bearer '+(token if token is not None else getattr(self,'token','')),'Content-Type':'application/json'})
         r=conn.getresponse();status=r.status;raw=r.read();conn.close()
         return status,json.loads(raw)
+    def test_brand_assets_are_public_and_private_files_stay_unavailable(self):
+        for path,kind,signature in (
+            ('/icon.svg','image/svg+xml',b'<svg'),
+            ('/icon-512.png','image/png',b'\x89PNG\r\n\x1a\n'),
+            ('/apple-touch-icon.png','image/png',b'\x89PNG\r\n\x1a\n'),
+        ):
+            with self.subTest(path=path):
+                conn=http.client.HTTPConnection('127.0.0.1',self.port,timeout=5)
+                conn.request('GET',path)
+                response=conn.getresponse()
+                self.assertEqual(response.status,200)
+                self.assertEqual(response.getheader('Content-Type'),kind)
+                self.assertEqual(response.getheader('X-Content-Type-Options'),'nosniff')
+                self.assertTrue(response.read().startswith(signature))
+                conn.close()
+        for path in ('/.env','/../.env','/icon.svg/../../.env','/docs/INSTALLATION.md'):
+            self.assertEqual(self.call(path,token='invalid')[0],404)
     def test_auth_logout_and_rate_limit(self):
         self.assertEqual(self.call('/api/status',token='invalid')[0],401)
         self.assertEqual(self.call('/api/logout',{})[0],200)

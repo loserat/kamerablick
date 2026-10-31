@@ -15,7 +15,7 @@ Stand: 31.10.2026. Die Software ist vorbereitet; das Goal ist wegen der noch off
 | Versionierte Updates | Lokale Versionswahl, gemeinsame Pi-Laufzeit und Rückkehrpfade getestet; öffentliches Release v0.1.0 und ARMv7-/ARM64-/AMD64-Image veröffentlicht, anonymer ARMv7-Abruf geprüft | Installation, Aktualisierung und Rückkehr am Pi 4B prüfen |
 | Echter Containerbetrieb | Lokale ARM64- sowie ARMv7/32-Bit-Docker-Abnahme unter Emulation; Bericht neben Projektpaket | Keine Gleichsetzung mit GPIO-/CEC-/Pi-Abnahme |
 | Privater Fernzugriff | SSH-/VPN-Weg dokumentiert, keine Portfreigabe | VPN/SSH am Ziel einrichten und aus fremdem Netz prüfen |
-| Bedienungsanleitung | README, INSTALLATION, FERNBEDIENUNG und diese Abnahme vorhanden | Nach echten Geräteeinstellungen abschließend gegenprüfen |
+| Bedienungsanleitung | README, docs/INSTALLATION, docs/FERNBEDIENUNG und diese Abnahme vorhanden | Nach echten Geräteeinstellungen abschließend gegenprüfen |
 
 ## Abfolge am späteren Gerät
 
@@ -34,7 +34,7 @@ Nicht getestete Punkte bleiben offen. Weder ein grüner HTTP-Test noch eine Demo
 
 ## Aktueller Abschlussstand
 
-Die lokale Softwareprüfung umfasst 89 Python-Tests, 32 JavaScript-Prüfungen und ergänzende native ARM64-Abnahmen. Die ARMv7/32-Bit-Abnahme hat Anmeldung, Konfigurationsspeicherung, Neustart, Versionswechsel und Rückkehr unter Emulation geprüft. Der Streamtest prüft zehn Fälle mit echtem mpv und MediaMTX einschließlich Ausschalten während einer ausgefallenen Videoquelle. Es wird ausschließlich erzeugtes Testvideo ohne HDMI-Ausgabe genutzt. Der Bericht `stream-abnahme.json` liegt neben dem Projektpaket und enthält die geprüften Quellprüfsummen.
+Die lokale Softwareprüfung umfasst 90 Python-Tests, 32 JavaScript-Prüfungen und ergänzende native ARM64-Abnahmen. Die ARMv7/32-Bit-Abnahme hat Anmeldung, Konfigurationsspeicherung, Neustart, Versionswechsel und Rückkehr unter Emulation geprüft. Der Streamtest prüft zehn Fälle mit echtem mpv und MediaMTX einschließlich Ausschalten während einer ausgefallenen Videoquelle. Es wird ausschließlich erzeugtes Testvideo ohne HDMI-Ausgabe genutzt. Die erzeugten JSON-Prüfberichte werden außerhalb des Git-Repositories archiviert; der Streambericht enthält die geprüften Quellprüfsummen. Die reproduzierbaren Prüfprogramme bleiben unter `tests/`.
 
 Für den Abschluss fehlen der Zugriff auf den nun benannten Pi 4B, das TV-Modell und der erreichbare Zielzugang zur Instant-Zentrale. Im Projekt ist keine verwaltete Geräteinstallation und kein produktiver Protect-Zugang vorhanden. Installation, WLAN am TV-Standort, grafischer Autostart nach Stromausfall, GPIO-Verdrahtung, IR-/CEC-Tasten und privater Fernzugriff müssen deshalb noch vor Ort beziehungsweise am Zielgerät geprüft werden.
 

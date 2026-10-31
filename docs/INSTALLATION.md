@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.0
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.1
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -89,7 +89,7 @@ Neuversuche warten mit zunehmendem Abstand von 5 bis 60 Sekunden. Nach mindesten
 Nach Veröffentlichung einer passenden Version:
 
 ```sh
-./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.0
+./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.1
 ```
 
 Es werden Dashboard und mitgelieferter Pi-Dienst gemeinsam aktualisiert. Die gewählte Image-Version bestimmt auch ihre zusätzlichen Hilfsmodule; der Updater übernimmt diese nach einer Pfad- und Quellprüfung. Einstellungen, Protect-Zugang und TV-Freigaben sowie vorhandene Pi-Konfiguration werden gesichert. Der tatsächliche vorherige Container wird als lokales Rückfallimage erhalten. Bei fehlgeschlagenem Start oder Health-Test werden altes Image, alte Pi-Laufzeit und gesicherte Daten wiederhergestellt.

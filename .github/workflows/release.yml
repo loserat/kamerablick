@@ -68,9 +68,9 @@ jobs:
 
           Enthält Varianten für ARM64 (Pi 4B/64 Bit), ARMv7 (Pi 2B/32 Bit) und AMD64.
 
-          [Pi-4-Installation mit WLAN](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/PI4.md)
-          · [Alternative: Pi 2 mit LAN](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/PI2.md)
-          · [Geräteabnahme und Grenzen](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/ABNAHME.md)
+          [Pi-4-Installation mit WLAN](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/docs/PI4.md)
+          · [Alternative: Pi 2 mit LAN](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/docs/PI2.md)
+          · [Geräteabnahme und Grenzen](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/docs/ABNAHME.md)
 
           Das Dashboard läuft in Docker. Taster, HDMI-CEC, Kiosk und Videoplayer laufen als Pi-Dienste.
           EOF

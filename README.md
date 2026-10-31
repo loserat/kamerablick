@@ -1,114 +1,113 @@
-# Kamerablick · Oma TV
+<p align="center">
+  <img src="docs/assets/kamerablick-banner.svg" alt="Kamerablick — Ein Knopf. Alles im Blick." width="100%">
+</p>
 
-Eine einfache TV-Ansicht für UniFi Protect: Taster drücken, Kamera ansehen und den Fernseher wieder in Standby schicken. Das geschützte Dashboard dient der Einrichtung und Wartung.
+<p align="center">
+  <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg" alt="Automatische Prüfungen"></a>
+  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/github/v/release/loserat/kamerablick?color=285f45&amp;label=Version" alt="Aktuelle Version"></a>
+  <img src="https://img.shields.io/badge/Raspberry_Pi-4B-285f45" alt="Zielgerät Raspberry Pi 4B">
+  <img src="https://img.shields.io/badge/Status-fr%C3%BChe_Entwicklung-d5e6b5?labelColor=285f45" alt="Frühe Entwicklung">
+</p>
 
-**Noch keine abgeschlossene Inbetriebnahme.** Als Ziel ist ein Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit) mit Desktop vorgesehen; die Installation auf diesem Gerät wurde noch nicht geprüft. „Instant“ ist als Protect-Zentrale benannt; genaue Version und TV-Modell sind offen. Softwaretests ersetzen keine Inbetriebnahme am Gerät.
+<p align="center">
+  <strong>Deine Kamera auf dem Fernseher. Einfach genug für den Alltag.</strong><br>
+  Raspberry Pi · UniFi Protect · HDMI-CEC · Docker
+</p>
 
-- [Pi 4B mit WLAN aufsetzen und später von GitHub installieren](PI4.md)
-- [Alternative: Pi 2B mit LAN und 32 Bit](PI2.md)
-- [Installation und Updates](INSTALLATION.md)
-- [Vollständige Abnahme und offene Punkte](ABNAHME.md)
-- [Kamerastatus und Ereignisse](TELEMETRIE.md)
-- [Fernbedienung und Tastenprüfung](FERNBEDIENUNG.md)
+<p align="center">
+  <a href="docs/PI4.md">Pi einrichten</a> ·
+  <a href="docs/INSTALLATION.md">Installieren</a> ·
+  <a href="https://github.com/loserat/kamerablick/releases">Releases</a> ·
+  <a href="https://github.com/loserat/kamerablick/issues">Feedback</a>
+</p>
 
-## Für deine Oma
+## Einmal drücken. Einfach nachsehen.
 
-In der TV-Ansicht gibt es eine große Kamerakachel, eine kurze Hilfe und „Fernseher aus“ mit Bestätigung. Pfeiltasten wählen aus, Enter entspricht OK; Esc oder Rücktaste führt zurück. Die Einstellungen sind dort nicht erreichbar.
+Kamerablick entstand für meine Oma: Sie soll sehen können, wer vor der Tür steht, ohne eine App zu suchen oder ein Kamerasystem bedienen zu müssen.
 
-Der Taster schaltet Kamera und TV ein. Ein weiterer Druck fordert Standby an. Die automatische Abschaltzeit wird im Dashboard festgelegt. „Zur Übersicht“ beendet das Kamerabild und lässt den Fernseher eingeschaltet.
+Ein Taster am Raspberry Pi schaltet den Fernseher ein und öffnet die eingerichtete Kamera. Der nächste Druck schickt den TV in Standby. Alternativ gibt es eine übersichtliche TV-Ansicht mit großen Schaltflächen, sichtbarem Fokus und Pfeiltasten-/OK-Bedienung. Einrichtung und Wartung erledigst du im separaten Dashboard.
 
-Tastatur und Weboberfläche sind getestet. Der CEC-Empfang für Pfeile, OK und Zurück ist implementiert und lokal mit simulierten Tasten geprüft. Die echte TV-Fernbedienung ist noch nicht am Gerät verifiziert. Die TV-Ansicht zeigt derzeit eine eingerichtete Kamera.
+> **Stand:** Software und Docker-Images sind veröffentlicht und lokal geprüft. Die Inbetriebnahme am echten Pi 4B, an Protect und am Fernseher steht noch aus. Welche TV-Fernbedienung funktioniert, hängt vom HDMI-CEC-Empfang des Fernsehers ab. [Prüfstand und Grenzen →](docs/ABNAHME.md)
 
-## Für dich
+## Zwei Ansichten. Für zwei Aufgaben.
 
-- Protect-Adresse und API-Schlüssel eintragen, Kamera auswählen und Standbild prüfen; die Stream-Adresse wird übernommen.
-- GPIO, Bildqualität und Abschaltzeit einstellen.
-- Wiedergabefortschritt prüfen und festhängende Wiedergabe automatisch neu verbinden.
-- Kamerastatus und letzte empfangene Bewegung, Person und Fahrzeug mit erkennbarer Aktualität sehen.
-- Privater Zugriff über den vorhandenen VPN-/SSH-Weg; Standardbindung bleibt localhost.
-- Versionierte Updates über GitHub Container Registry, mit gemeinsamer Pi-Laufzeit, privater Sicherung und Rückkehr nach Startfehlern.
+### Für den Fernseher
 
-Protect-Zugang, Einstellungen und TV-Freigabe bleiben in lokalen Dateien beziehungsweise im Docker-Volume. Sie gehören nicht ins Repository. TV- und Dashboard-Zugänge sind getrennt.
+Große Kacheln für Kamera, kurze Hilfe und Ausschalten mit Bestätigung. Pfeile wählen aus, **OK** öffnet, **Zurück** führt zur Übersicht.
 
-## Neue Pi-Installation
+![TV-Ansicht mit großer Kamerakachel und sichtbarer Auswahl](docs/assets/tv-ansicht.png)
 
-Projekt herunterladen:
+### Für die Einrichtung
+
+Protect verbinden, Kamera auswählen, Standbild prüfen und übernehmen. Die Stream-Adresse wird automatisch ermittelt. Danach lassen sich Taster, Abschaltzeit und Kamerastatus zentral einstellen beziehungsweise prüfen.
+
+![Kamerablick-Dashboard mit Kameraeinrichtung und Status](docs/assets/dashboard.png)
+
+*Beide Abbildungen zeigen den lokalen Demomodus. Es werden keine echten Kamerabilder oder privaten Zugangsdaten gezeigt.*
+
+## Das steckt drin
+
+| Funktion | Was sie macht |
+| --- | --- |
+| **UniFi Protect einrichten** | Adresse und API-Schlüssel eingeben, erreichbare Kamera und Bildqualität auswählen. |
+| **Taster und TV** | GPIO-Taster, HDMI-CEC für Einschalten/Standby und einstellbare automatische Abschaltung. |
+| **Einfache TV-Bedienung** | Pfeiltasten, OK, Zurück; CEC-Empfänger für die TV-Fernbedienung vorbereitet. |
+| **Kamera und Ereignisse** | Verbindungsstatus sowie letzte empfangene Bewegung, Person und Fahrzeug mit erkennbarer Aktualität. |
+| **Wiedergabe überwachen** | Festhängende Streams erkennen und mit wachsendem Abstand erneut verbinden. |
+| **Versionierte Updates** | Container und Pi-Dienste gemeinsam wechseln, Einstellungen sichern und nach Startfehlern zurückkehren. |
+| **Privat warten** | Geschütztes Dashboard über SSH/VPN erreichen; VPN wird separat eingerichtet. |
+
+Aktuell zeigt die TV-Ansicht **eine ausgewählte Kamera**. Der Videoplayer läuft direkt auf dem Pi; das Dashboard zeigt Status und Standbilder.
+
+## Auf deinem Pi starten
+
+Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit) mit Desktop**. Du brauchst außerdem eine SD-Karte, geeignetes Netzteil, Micro-HDMI-Kabel, einen CEC-fähigen TV und eine erreichbare Protect-Zentrale mit API-Schlüssel.
+
+Zuerst [Betriebssystem, WLAN, Docker und benötigte Programme einrichten](docs/PI4.md). Anschließend als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.0 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.1 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
-```
-
-
-Voraussetzung: Raspberry Pi OS mit Desktop, auf dem Pi 4B empfohlen in 64 Bit, Docker/Compose, GPIO-Bibliothek, Chromium, mpv und cec-utils. Details und Pakete stehen in der Installationsanleitung.
-
-Als normaler Desktop-Benutzer im Projektordner:
-
-```sh
 python3 pi/install.py --check
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.0
 ```
 
-Das öffentliche Projekt liegt unter [loserat/kamerablick](https://github.com/loserat/kamerablick). Verfügbare Versionen stehen unter [Releases](https://github.com/loserat/kamerablick/releases). Das Image enthält ARM64 für den Pi 4B mit 64-Bit-System sowie ARMv7 und AMD64; Docker wählt die zum System passende Variante automatisch. Ohne `--image` bleibt ein lokaler Entwicklerbau möglich; für die normale Pi-Installation den fertig veröffentlichten Container verwenden.
-
-Die erste Zeile prüft nur. Die zweite installiert erst nach erfolgreicher Prüfung. Vorhandene eigene gleichnamige Service-/Autostartdateien werden nicht überschrieben; ein vorhandener Demomodus wird nicht stillschweigend auf Echtbetrieb umgestellt.
-
-Eine frische Installation erzeugt zufällige Zugangswerte und startet die TV-Ansicht ab der nächsten Desktop-Anmeldung automatisch. Für die Kameraeinrichtung das Dashboard über den privaten Wartungszugang öffnen. Das Passwort steht auf dem Pi in `.env`; es wird nicht ins Installationsprotokoll geschrieben.
-
-## Lokale Demo ohne Pi
+Fehlende Voraussetzungen zuerst ergänzen. Danach installieren:
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-export DASHBOARD_PASSWORD='eigenes-langes-passwort'
-DEMO_MODE=true .venv/bin/python app/server.py
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.1
 ```
 
-Im Browser `http://127.0.0.1:8088` öffnen. Das Dashboard kann Beispielkameras laden und die TV-Ansicht öffnen. Es werden keine GPIO-/TV-Befehle gesendet. Eine Demo zeigt kein echtes Kamerabild und keine erfundenen Bewegungserkennungen.
+Das öffentliche Image benötigt keine GitHub-Anmeldung. Docker wählt automatisch **ARM64**, **ARMv7** oder **AMD64** passend zum installierten System. Die Pi-Laufzeit wird aus derselben Image-Version übernommen.
 
-## Updates
+## So arbeiten die Teile zusammen
 
-Für eine verwaltete Installation mit laufendem Dashboard:
-
-```sh
-./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.0
+```mermaid
+flowchart LR
+    Button["GPIO-Taster"] --> Pi["Pi-Dienst"]
+    Remote["TV-Fernbedienung · CEC"] --> Pi
+    Dashboard["Dashboard · Docker"] --> Pi
+    Protect["UniFi Protect"] -->|"RTSP / RTSPS"| Player["Videoplayer auf dem Pi"]
+    Pi --> Player
+    Pi -->|"HDMI-CEC"| TV["Fernseher"]
+    Player -->|"HDMI-Bild"| TV
 ```
 
-Der Updater sichert Einstellungen einschließlich Protect- und TV-Zugang, `.env` und vorhandene Pi-Konfiguration. Er übernimmt Dashboard und die mitgelieferten Pi-Laufzeitdateien gemeinsam. Auch neue Hilfsmodule kommen aus der gewählten Image-Version; Dateipfade und Python-Quellen werden vor dem Wechsel geprüft. Bei einem Fehler stellt er die alte Version einschließlich Daten wieder her und behält das tatsächliche alte Image auch für spätere Neustarts in `.env` bei.
+Das Dashboard läuft ohne privilegierten Gerätezugriff und ohne Docker-Socket. GPIO, CEC, Kiosk-Browser und Videoplayer laufen als lokale Pi-Dienste. Zugangswerte und Einstellungen bleiben in `.env` beziehungsweise im lokalen Datenvolume. Der Dashboard-Port bindet standardmäßig nur an `127.0.0.1`.
 
-Nach einem unterbrochenen Update:
+## Dokumentation
 
-```sh
-./pi/update.sh --recover
-```
+| Du möchtest … | Hier geht es weiter |
+| --- | --- |
+| Den Pi 4B mit WLAN vorbereiten | [Pi-4-Schnellstart](docs/PI4.md) |
+| Installieren, Kamera verbinden oder aktualisieren | [Installation und Updates](docs/INSTALLATION.md) |
+| Eine TV-Fernbedienung prüfen | [Fernbedienung und Tastenempfang](docs/FERNBEDIENUNG.md) |
+| Kamerastatus und letzte Bewegung verstehen | [Telemetrie und Ereignisse](docs/TELEMETRIE.md) |
+| Den tatsächlichen Prüfstand sehen | [Geräteabnahme und offene Punkte](docs/ABNAHME.md) |
+| Lokal ausprobieren oder Tests ausführen | [Entwicklung](docs/ENTWICKLUNG.md) |
+| Einen Pi 2B mit LAN weiterverwenden | [Alternative für ARMv7/32 Bit](docs/PI2.md) |
 
-Die Desktop-Startbrücke führt diese Prüfung vor dem Dienststart ebenfalls aus. Betriebssystem, VPN und Firmware werden nicht mitverändert. Der GitHub-Workflow baut bei `v*`-Tags ARMv7-/ARM64-/AMD64-Images; prüft die enthaltenen Plattformen und erzeugt anschließend automatisch das GitHub-Release für die Versionsprüfung im Dashboard.
+## Mitmachen
 
-Kamera-, GPIO- und CEC-Funktion nach Updates am Gerät prüfen. Bei inaktiver grafischer Sitzung kann der Updater nur das Dashboard prüfen; der Pi-Dienst wird erst beim Desktop-Login gestartet.
+Fehler entdeckt oder eine Idee für einfachere Bedienung? [Issue öffnen](https://github.com/loserat/kamerablick/issues) oder einen kleinen Pull Request einreichen. Vorgehen und lokale Tests stehen in [CONTRIBUTING.md](CONTRIBUTING.md); für Sicherheitsprobleme gilt [SECURITY.md](SECURITY.md).
 
-## Prüfung
-
-```sh
-.venv/bin/python -m unittest discover -s tests -v
-node tests/test_tv_navigation.cjs
-node tests/test_telemetry_view.cjs
-node tests/test_tv_remote.cjs
-```
-
-Optional mit erreichbarer Docker-Engine:
-
-```sh
-python3 tests/docker_acceptance.py
-python3 tests/docker_acceptance.py --platform linux/arm/v7
-python3 tests/cec_acceptance.py
-python3 tests/player_acceptance.py
-python3 tests/stream_acceptance.py
-```
-
-Die Containerabnahmen bauen eigene Testimages, starten ausschließlich eigene Testcontainer und entfernen ihre Container, Volumes und temporären Images anschließend. Die CEC-Prozessprüfung nutzt das echte Trixie-Paket ohne angeschlossene Geräte. Die Player-Abnahme verwendet echtes mpv mit einem erzeugten lokalen Video und unsichtbarer Testausgabe. Sie prüft Stillstand, Wiederanlauf und die unveränderte Abschaltzeit; RTSP und die sichtbare TV-Ausgabe werden dabei nicht geprüft. Die zusätzliche Stream-Abnahme nutzt einen echten RTSP/RTSPS-Testserver in einem internen Docker-Netz ohne veröffentlichte Ports. Kameraausfall, lautloser Verbindungsstillstand, Serverneustart und Ausschalten während eines Ausfalls werden mit Produktionszeitgrenzen geprüft. Es werden ausschließlich erzeugte Testbilder verwendet; MediaMTX ist nur ein Testwerkzeug und wird für den Pi-Betrieb nicht benötigt.
-
-89 Python-Tests und 32 JavaScript-Assertions prüfen Authentifizierung, Protect-Einrichtung, Zertifikate, TV-Zugang, getrennten CEC-Empfänger, Tastendopplungen, Navigation, Installation und Fehlerfälle der Pi-/Update-Logik. Zusätzlich ist der Containerbetrieb auf ARM64 sowie ARMv7/32 Bit (unter Emulation) mit echter Docker-Engine geprüft: Anmeldung, Konfigurationsspeicherung, Neustart, Laufzeitwechsel, Rückkehr nach einem absichtlich fehlerhaften Image, Datenwiederherstellung und Wiederaufnahme einer unterbrochenen Aktualisierung.
-
-Das ist keine Live-Verifikation von Protect, GPIO, HDMI-CEC, grafischem Autostart oder VPN. Der Player meldet über einen privaten lokalen Kanal seine Wiedergabezeit und Videoausgabe. Erst eine fortschreitende Wiedergabe wird entsprechend angezeigt; ein laufender Prozess allein genügt nicht. Das ist weiterhin kein Beweis für das tatsächlich sichtbare oder aktuelle Kamerabild am TV. Kameratelemetrie und die letzte empfangene Bewegung sind implementiert und gegen eine lokale Testkonsole geprüft. Die reale Protect-Version und die tatsächlichen Ereignisse am Instant bleiben zu verifizieren.
-
-Technische Grundlagen: [Protect in Home Assistant](https://www.home-assistant.io/integrations/unifiprotect/), [Ubiquiti Protect API](https://developer.ui.com/protect), [Raspberry Pi OS](https://www.raspberrypi.com/documentation/computers/configuration.html).
+Kamerablick ist ein unabhängiges Projekt und steht in keiner Verbindung zu Ubiquiti oder Raspberry Pi.

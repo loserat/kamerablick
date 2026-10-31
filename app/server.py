@@ -147,9 +147,9 @@ class Handler(BaseHTTPRequestHandler):
                         return self.send({'version':release['tag_name'],'current':os.getenv('APP_VERSION','dev'),'message':'Installation über den privaten Wartungszugang.'})
                     except (OSError,ValueError,KeyError): return self.send({'error':'Kein öffentliches GitHub-Release erreichbar. Repository und Verbindung prüfen.'},502)
                 return self.send({'error':'Nicht gefunden'},404)
-            name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/tv':'tv.html','/tv/':'tv.html','/tv.css':'tv.css','/tv.js':'tv.js','/tv-navigation.js':'tv-navigation.js','/tv-remote.js':'tv-remote.js','/telemetry-view.js':'telemetry-view.js'}.get(self.path)
+            name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/tv':'tv.html','/tv/':'tv.html','/tv.css':'tv.css','/tv.js':'tv.js','/tv-navigation.js':'tv-navigation.js','/tv-remote.js':'tv-remote.js','/telemetry-view.js':'telemetry-view.js','/icon.svg':'icon.svg','/icon-512.png':'icon-512.png','/apple-touch-icon.png':'apple-touch-icon.png'}.get(self.path)
             if not name: return self.send({'error':'Nicht gefunden'},404)
-            kind={'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css; charset=utf-8'}[name.split('.')[-1]]
+            kind={'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css; charset=utf-8','svg':'image/svg+xml','png':'image/png'}[name.split('.')[-1]]
             return self.send((STATIC/name).read_bytes(),content_type=kind)
         except ValueError as e: self.send({'error':str(e)},400)
         except Exception: self.send({'error':'Anfrage fehlgeschlagen. Bitte erneut versuchen.'},500)

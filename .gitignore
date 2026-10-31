@@ -18,3 +18,13 @@ backups/
 
 .venv/
 .test-env/
+
+# Erzeugte Nachweise und lokale Werkzeuge bleiben außerhalb des Quellstands.
+Pruefberichte/
+test-results/
+playwright-report/
+.coverage
+htmlcov/
+*.log
+.idea/
+.vscode/

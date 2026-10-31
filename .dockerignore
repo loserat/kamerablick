@@ -16,3 +16,12 @@ backups
 
 .venv/
 .test-env/
+
+.github/
+docs/
+Pruefberichte/
+*.md
+.DS_Store
+test-results/
+playwright-report/
+*.log
