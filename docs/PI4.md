@@ -39,15 +39,16 @@ docker compose version
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.3 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.4 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
+sudo loginctl enable-linger "$USER"
 python3 pi/install.py --check
 ```
 
 Fehlende Voraussetzungen aus der Prüfung zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.3
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.4
 ```
 
 Das öffentliche Image enthält bereits **ARM64**; Docker wählt diese Variante automatisch. Für den Wechsel vom Pi 2B zum Pi 4B ist kein neues Anwendungsimage nötig. Der Pi muss den Container nicht selbst bauen.
@@ -64,6 +65,8 @@ Protect-Adresse und lokalen UniFi-Benutzer oder API-Schlüssel im Einrichtungsdi
 
 Der Zugriff von außerhalb benötigt zusätzlich einen privaten VPN-Zugang. WLAN und aktiviertes SSH allein stellen diesen Fernzugriff noch nicht bereit. Weitere Schritte, Updates und Tasteranschluss: [Installation](INSTALLATION.md), [Geräteabnahme](ABNAHME.md).
 
+App-Updates erfolgen nach der einmaligen Einrichtung unter **Wartung** in der Oberfläche. Für bereits installierte Versionen gilt [Browser-Updates aktivieren](BROWSER-UPDATES.md).
+
 ## Prüfstand
 
-Version v0.1.3 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.
+Version v0.1.4 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.

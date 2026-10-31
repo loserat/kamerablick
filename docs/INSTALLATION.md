@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.3
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.4
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -99,20 +99,14 @@ Neuversuche warten mit zunehmendem Abstand von 5 bis 60 Sekunden. Nach mindesten
 
 ## Updates und Rückweg
 
-Nach Veröffentlichung einer passenden Version:
+Ab v0.1.4 erfolgt die normale Aktualisierung in der Oberfläche unter **Wartung → Jetzt aktualisieren** mit Bestätigung, Sicherung und Startprüfung. Eine vorhandene Installation benötigt einmalig den unabhängigen Wartungsdienst; die genauen Übergangsbefehle und Fehlerfälle stehen in [BROWSER-UPDATES.md](BROWSER-UPDATES.md).
 
-```sh
-./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.3
-```
+Für dauerhafte Benutzer-Dienste vor der neuen Pi-Installation einmalig `sudo loginctl enable-linger "$USER"` ausführen. Nach der Einrichtung ist kein SSH-Befehl pro App-Update mehr nötig. Der Wartungsdienst ist unabhängig vom TV-Browser und bleibt ausschließlich auf dem Pi erreichbar.
 
-Es werden Dashboard und mitgelieferter Pi-Dienst gemeinsam aktualisiert. Die gewählte Image-Version bestimmt auch ihre zusätzlichen Hilfsmodule; der Updater übernimmt diese nach einer Pfad- und Quellprüfung. Einstellungen, Protect-Zugang und TV-Freigaben sowie vorhandene Pi-Konfiguration werden gesichert. Der tatsächliche vorherige Container wird als lokales Rückfallimage erhalten. Bei fehlgeschlagenem Start oder Health-Test werden altes Image, alte Pi-Laufzeit und gesicherte Daten wiederhergestellt.
-
-Ein laufendes Update kann nicht parallel ein zweites Mal gestartet werden. Bleibt nach Stromausfall ein unvollständiger Updatezustand zurück, versucht der Desktop-Autostart vor dem Dienststart die Wiederherstellung. Manuell:
+Der manuelle Rückweg bleibt verfügbar:
 
 ```sh
 ./pi/update.sh --recover
 ```
 
-Ein absichtlich fehlerhaftes Container-Image und die Wiederherstellung wurden lokal auf ARM64 Docker geprüft. Benutzer-Dienste und Hardware waren dabei nicht aktiv. Daher ersetzt der Test nicht die Pi-Abnahme. Wenn kein Desktop aktiv ist, prüft der Updater den Container; die Prüfung des Pi-Diensts erfolgt bei der nächsten grafischen Anmeldung.
-
-Der Updater ändert keine Betriebssystempakete, VPN-Einstellungen oder Firmware. Diese Updates benötigen eigene Wartung und Tests.
+Container, Pi-Laufzeit, lokale Konfiguration und tatsächliches vorheriges Image werden gemeinsam berücksichtigt. Betriebssystem, Docker, Firmware und VPN werden nicht automatisch mitverändert. Die tatsächlichen Pi-/TV-Funktionen nach einem Update zusätzlich am Gerät prüfen.

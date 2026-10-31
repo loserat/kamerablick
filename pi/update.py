@@ -12,9 +12,9 @@ import tempfile
 import time
 import urllib.request
 
-from install import atomic_write, read_env, runtime_release, switch_runtime, extract_runtime
+from install import atomic_write, read_env, runtime_release, switch_runtime, extract_runtime, project_root
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = project_root(__file__)
 SNAPSHOT = "import os,json,pathlib; p=pathlib.Path(os.getenv('DATA_DIR','/data')); print(json.dumps({f.name:f.read_text() for f in p.glob('*.json') if f.is_file() and not f.is_symlink()}))"
 RESTORE = """import json,os,pathlib,tempfile,re
 root=pathlib.Path(os.getenv('DATA_DIR','/data'))
@@ -74,12 +74,29 @@ def target_active():
     return run(['systemctl', '--user', 'is-active', '--quiet', 'oma-tv-session.target'], allowed=True, capture=True).returncode == 0
 
 
+def maintenance_enabled():
+    path=ROOT/'.install.json'
+    return path.exists() and json.loads(path.read_text()).get('maintenance') is True
+
+
+def restart_maintenance():
+    if maintenance_enabled():
+        run(['systemctl','--user','restart','oma-tv-maintenance.service'])
+
+
 def wait_healthy(with_host):
     for _ in range(15):
         try:
             result = compose('exec', '-T', 'dashboard', 'python', '-c',
                 "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('PORT','8088')+'/healthz',timeout=3)", allowed=True, capture=True)
             if result.returncode == 0:
+                if maintenance_enabled():
+                    env=read_env(ROOT/'.env')
+                    req=urllib.request.Request('http://127.0.0.1:8093/status',headers={'Authorization':'Bearer '+env['AGENT_TOKEN']})
+                    with urllib.request.urlopen(req,timeout=3) as response:
+                        bridge=json.load(response)
+                    if bridge.get('protocol')!=1 or bridge.get('runtime')!=runtime_target().name:
+                        raise ValueError('Wartungsdienst noch nicht auf der gewählten Version')
                 if not with_host:
                     return
                 env = read_env(ROOT / '.env')
@@ -95,7 +112,8 @@ def wait_healthy(with_host):
     raise RuntimeError('Startprüfung für Dashboard oder Pi-Dienst fehlgeschlagen.')
 
 
-def rollback(state):
+def rollback(state, progress=None):
+    if progress: progress('rolling_back')
     backup = Path(state['backup'])
     print('Stelle vorherige Version und Einstellungen wieder her …', flush=True)
     if state['session_active']:
@@ -116,29 +134,33 @@ def rollback(state):
     compose('up', '-d', '--no-build')
     if state['session_active']:
         run(['systemctl', '--user', 'start', 'oma-tv-session.target'])
+    restart_maintenance()
     wait_healthy(state['session_active'])
     state['phase'] = 'rolled_back'
     write_state(state)
     print('Vorherige Version wiederhergestellt und erreichbar.', flush=True)
 
 
-def recover():
+def recover(progress=None):
     path = ROOT / 'backups/update-state.json'
     if not path.exists():
         return
     state = json.loads(path.read_text())
     if state.get('phase') in ('applying', 'rollback_failed'):
-        rollback(state)
+        rollback(state,progress)
 
 
-def update(image, local=False):
+def update(image, local=False, progress=None, verify=None):
     if not (ROOT / '.install.json').exists():
         raise RuntimeError('Verwaltete Installation fehlt. Zuerst pi/install.py --install ausführen.')
     previous_runtime = runtime_target()
+    if progress: progress('downloading')
     if local:
         run(['docker', 'image', 'inspect', image], capture=True)
     else:
         run(['docker', 'pull', image])
+    if verify:
+        verify(image)
     with tempfile.TemporaryDirectory(prefix='kamerablick-update-') as temp:
         source=extract_runtime(image,Path(temp)/'runtime',runner=run)
         # Runtime modules belong to the selected image, not the old bootstrap.
@@ -150,6 +172,7 @@ def update(image, local=False):
         raise RuntimeError('Genau ein laufender Dashboard-Container wird erwartet.')
     actual_image = run(['docker', 'inspect', '--format', '{{.Image}}', container], capture=True).stdout.strip()
     stamp = time.strftime('%Y%m%d-%H%M%S') + '-' + str(os.getpid())
+    if progress: progress('backing_up')
     rollback_image = 'oma-tv-rollback:' + stamp
     run(['docker', 'tag', actual_image, rollback_image])
     backup = ROOT / 'backups' / stamp
@@ -170,6 +193,7 @@ def update(image, local=False):
         'rollback_image': rollback_image, 'session_active': active, 'new_image': image}
     write_state(state)
     try:
+        if progress: progress('installing')
         if active:
             run(['systemctl', '--user', 'stop', 'oma-tv-session.target'])
         atomic_write(ROOT / '.env', env_for_image(original, image, image.rsplit(':',1)[-1]))
@@ -177,10 +201,12 @@ def update(image, local=False):
         compose('up', '-d', '--no-build')
         if active:
             run(['systemctl', '--user', 'start', 'oma-tv-session.target'])
+        restart_maintenance()
+        if progress: progress('verifying')
         wait_healthy(active)
     except (Exception, KeyboardInterrupt):
         try:
-            rollback(state)
+            rollback(state,progress)
         except Exception:
             state['phase'] = 'rollback_failed'
             write_state(state)

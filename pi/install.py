@@ -1,6 +1,7 @@
 """Read-only Pi preflight, then an explicit, idempotent installation as desktop user."""
 import argparse
 import ast
+import fcntl
 import hashlib
 import importlib.util
 import json
@@ -14,9 +15,18 @@ import shutil
 import subprocess
 import tempfile
 import time
+import urllib.request
 
-RUNTIME_FILES = ('agent.py', 'kiosk.py', 'session.py', 'cec_bridge.py', 'player_health.py')
+RUNTIME_FILES = ('agent.py', 'kiosk.py', 'session.py', 'cec_bridge.py', 'player_health.py',
+    'install.py', 'update.py', 'maintenance.py', 'update_job.py', 'release_info.py')
 MANAGED = '# Managed by Kamerablick installer\n'
+
+
+def project_root(file):
+    path = Path(file).resolve()
+    if path.parent.parent.name == 'releases' and path.parent.parent.parent.name == '.runtime':
+        return path.parents[3]
+    return path.parents[1]
 
 
 def read_env(path):
@@ -175,7 +185,7 @@ def prepare(root, home, image=None, runtime_source=None):
     user_units = home / '.config/systemd/user'
     desktop = home / '.config/autostart/kamerablick.desktop'
     agent_env = config_dir / 'agent.env'
-    managed_paths = [agent_env, desktop, *[user_units / name for name in ('oma-tv-agent.service','oma-tv-kiosk.service','oma-tv-session.target')]]
+    managed_paths = [agent_env, desktop, *[user_units / name for name in ('oma-tv-agent.service','oma-tv-kiosk.service','oma-tv-session.target','oma-tv-maintenance.service')]]
     # Complete conflict check before any setting or service is changed.
     for path in managed_paths:
         if path.exists() and not path.read_text().startswith(MANAGED):
@@ -193,17 +203,47 @@ def prepare(root, home, image=None, runtime_source=None):
     managed_write(user_units / 'oma-tv-agent.service', service('Kamerablick Taster und TV', 'agent.py', 'on-failure'))
     managed_write(user_units / 'oma-tv-kiosk.service', service('Kamerablick TV Ansicht', 'kiosk.py', 'always'))
     managed_write(user_units / 'oma-tv-session.target', '[Unit]\nDescription=Kamerablick grafische Sitzung\nWants=oma-tv-agent.service oma-tv-kiosk.service\n')
+    managed_write(user_units / 'oma-tv-maintenance.service', '[Unit]\nDescription=Kamerablick Updates\n\n[Service]\nEnvironmentFile="' + str(agent_env) + '"\nExecStart=/usr/bin/python3 "' + str(runtime / 'maintenance.py') + '" --root "' + str(root) + '"\nRestart=on-failure\nRestartSec=3\nNoNewPrivileges=true\nUMask=0077\nTimeoutStopSec=10\n\n[Install]\nWantedBy=default.target\n')
     managed_write(desktop, '[Desktop Entry]\nType=Application\nName=Kamerablick\nExec=/usr/bin/python3 "' + str(runtime / 'session.py') + '"\nTerminal=false\n')
     switch_runtime(root, release)
-    atomic_write(root / '.install.json', json.dumps({'schema': 1, 'root': str(root), 'home': str(home), 'runtime': str(release), 'agent_config': str(config_dir / 'config.json')}, indent=2) + '\n')
+    old_manifest=json.loads((root/'.install.json').read_text()) if (root/'.install.json').exists() else {}
+    atomic_write(root / '.install.json', json.dumps({'schema': 1, 'root': str(root), 'home': str(home), 'runtime': str(release), 'agent_config': str(config_dir / 'config.json'), 'maintenance':bool(old_manifest.get('maintenance'))}, indent=2) + '\n')
     return settings
 
 
+def wait_maintenance(root):
+    settings=read_env(root/'.env')
+    identity=hashlib.sha256(str(root.resolve()).encode()).hexdigest()
+    for _ in range(10):
+        try:
+            request=urllib.request.Request('http://127.0.0.1:8093/status',headers={'Authorization':'Bearer '+settings['AGENT_TOKEN']})
+            with urllib.request.urlopen(request,timeout=2) as response:
+                status=json.load(response)
+            if (status.get('protocol')==1 and status.get('instance')==identity and status.get('available')
+                    and status.get('runtime')==(root/'.runtime/current').resolve().name):
+                return
+        except (OSError,ValueError):
+            pass
+        time.sleep(.5)
+    raise ValueError('Wartungsdienst nicht bereit. systemctl --user status oma-tv-maintenance.service prüfen.')
+
+
 def install_project(root, home, image=None):
+    with open(root/'.update.lock','a') as handle:
+        try:
+            fcntl.flock(handle,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ValueError('Ein Update oder eine Installation läuft bereits. Bitte warten.') from None
+        return _install_project(root,home,image)
+
+
+def _install_project(root, home, image=None):
     if image:
         run_command(['docker','pull',image])
         with tempfile.TemporaryDirectory(prefix='kamerablick-install-') as temporary:
             source=extract_runtime(image,Path(temporary)/'runtime')
+            if not all((source/name).is_file() for name in RUNTIME_FILES):
+                raise ValueError('Das gewählte Image enthält noch keinen vollständigen Browser-Updatedienst. Eine aktuelle Kamerablick-Version verwenden.')
             prepare(root,home,image=image,runtime_source=source)
         command=['docker','compose','up','-d','--wait','--wait-timeout','120','--no-build']
     else:
@@ -213,6 +253,12 @@ def install_project(root, home, image=None):
     compose_env.pop('OMA_TV_IMAGE',None);compose_env.pop('APP_VERSION',None)
     subprocess.run(command,cwd=root,env=compose_env,check=True)
     subprocess.run(['systemctl','--user','daemon-reload'],check=True)
+    subprocess.run(['systemctl','--user','enable','--now','oma-tv-maintenance.service'],check=True)
+    subprocess.run(['systemctl','--user','restart','oma-tv-maintenance.service'],check=True)
+    wait_maintenance(root)
+    manifest=json.loads((root/'.install.json').read_text())
+    manifest['maintenance']=True
+    atomic_write(root/'.install.json',json.dumps(manifest,indent=2)+'\n')
 
 
 def main():
@@ -221,7 +267,7 @@ def main():
     parser.add_argument('--install', action='store_true', help='Nach erfolgreicher Prüfung installieren')
     parser.add_argument('--image', type=registry_image, help='Fertiges GHCR-Image herunterladen; kein Containerbau auf dem Pi')
     args = parser.parse_args()
-    root = Path(__file__).resolve().parents[1]
+    root = project_root(__file__)
     image=args.image
     if not image:
         previous=read_env(root/'.env').get('OMA_TV_IMAGE','')
@@ -240,6 +286,7 @@ def main():
         raise SystemExit('Installation nicht abgeschlossen. Voraussetzungen und Dateien prüfen. ' + (str(error) if isinstance(error, ValueError) else 'Dienststart fehlgeschlagen.'))
     print('Dateien eingerichtet. Bei der nächsten Desktop-Anmeldung startet Kamerablick automatisch.')
     print('Dashboard-Passwort steht ausschließlich in der lokalen .env. Protect im Dashboard einrichten.')
+    print('Für dauerhafte Browser-Updates einmalig: sudo loginctl enable-linger "$USER"')
     installed = read_env(root / '.env')
     if installed['BIND'] == '0.0.0.0':
         print('Dashboard im Heimnetz: http://PI-IP:' + installed['PORT'] + ' (PI-IP durch die Adresse des Raspberry Pi ersetzen).')

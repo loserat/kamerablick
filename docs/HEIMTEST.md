@@ -7,7 +7,7 @@ NVR-Zugang, Kameraauswahl, Standbild und manuell eingetragene Kameras lassen sic
 Mit installierter Docker Engine beziehungsweise Docker Desktop und Compose v2:
 
 ```sh
-git clone --branch v0.1.3 https://github.com/loserat/kamerablick.git ~/kamerablick-heimtest
+git clone --branch v0.1.4 https://github.com/loserat/kamerablick.git ~/kamerablick-heimtest
 cd ~/kamerablick-heimtest
 cp .env.example .env
 ```
@@ -39,7 +39,7 @@ Mit **Kamera manuell hinzufügen** einen Namen und die vorhandene RTSP-/RTSPS-Ad
 
 Unter **Wartung → NVR und Kamera prüfen** werden die gespeicherte NVR-Anmeldung, Kameraliste, das Standbild und die Stream-Adresse erneut gelesen. Eine erfolgreiche Prüfung bestätigt noch keine laufende Videowiedergabe. Bei einer manuell eingegebenen Kamera ohne NVR-Zuordnung erfolgt die Livebildprüfung später am Pi.
 
-NVR-Zugang, Bildqualität, aktive Kamera, GPIO-Pin und Abschaltzeit werden in der Oberfläche verwaltet. Betriebssystem, Docker, WLAN, SSH und VPN werden einmalig am Gerät eingerichtet. App-Updates nutzen derzeit noch den dokumentierten Wartungsweg; eine Installation aus der Oberfläche ist noch nicht umgesetzt.
+NVR-Zugang, Bildqualität, aktive Kamera, GPIO-Pin und Abschaltzeit werden in der Oberfläche verwaltet. Betriebssystem, Docker, WLAN, SSH und VPN werden einmalig am Gerät eingerichtet. App-Updates auf einer verwalteten Pi-Installation erfolgen über [Browser-Updates](BROWSER-UPDATES.md). Der getrennte Heimtest installiert keine Pi-Updates.
 
 ## Danach am Pi
 

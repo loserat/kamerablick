@@ -1,8 +1,13 @@
-import json, os, secrets, time, re, threading, urllib.request, urllib.error
+import json, os, secrets, time, re, threading, urllib.request, urllib.error, sys
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from protect import Protect, ProtectError, connection_credentials
 from telemetry import Telemetry, inactive
+try:
+    import release_info
+except ModuleNotFoundError:
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'pi'))
+    import release_info
 
 DATA=Path(os.getenv('DATA_DIR','./data'))
 DATA.mkdir(parents=True,exist_ok=True)
@@ -12,7 +17,7 @@ DEMO=HOME_TEST or os.getenv('DEMO_MODE','true').lower()=='true'
 AGENT=os.getenv('AGENT_URL','http://127.0.0.1:8091')
 TOKEN=os.getenv('AGENT_TOKEN','')
 STATIC=Path(__file__).parent/'static'
-DEFAULT=dict(camera_name='Eingang',stream_url='',gpio_pin=17,auto_off_minutes=5,github_repo='',camera_source='manual',camera_id='',quality='medium')
+DEFAULT=dict(camera_name='Eingang',stream_url='',gpio_pin=17,auto_off_minutes=5,github_repo=release_info.REPOSITORY,camera_source='manual',camera_id='',quality='medium')
 lock=threading.RLock()
 sessions={}
 failures={}
@@ -99,6 +104,41 @@ def telemetry_status():
     c=config()
     return inactive('demo' if c.get('camera_source')=='demo' else 'manual' if c.get('stream_url') else 'unconfigured')
 
+
+class MaintenanceError(ValueError):
+    def __init__(self,message,code=503):
+        super().__init__(message)
+        self.code=code
+
+
+def maintenance_request(path,body=None):
+    if len(TOKEN)<24:
+        raise MaintenanceError('Browser-Updates benötigen die einmalige Einrichtung des Pi-Wartungsdiensts.')
+    request=urllib.request.Request('http://127.0.0.1:8093/'+path,
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json'})
+    try:
+        with urllib.request.urlopen(request,timeout=12 if path=='update' else 3) as response:
+            raw=response.read(65537)
+            if len(raw)>65536: raise ValueError('Ungültige Antwort des Wartungsdiensts.')
+            return json.loads(raw)
+    except urllib.error.HTTPError as error:
+        try: message=json.loads(error.read(8192)).get('error')
+        except (ValueError,TypeError): message=None
+        raise MaintenanceError(message or 'Wartungsdienst konnte den Auftrag nicht ausführen.',error.code if error.code in (401,409,503) else 503) from None
+    except (OSError,ValueError):
+        raise MaintenanceError('Pi-Wartungsdienst nicht erreichbar. Browser-Updates einmalig einrichten beziehungsweise Dienst prüfen.') from None
+
+
+def maintenance_status():
+    if DEMO:
+        return {'available':False,'persistent':False,'job':None,'message':'Im Heimtest werden keine Pi-Updates installiert.'}
+    try:
+        return maintenance_request('status')
+    except ValueError as error:
+        return {'available':False,'persistent':False,'job':None,'message':str(error)}
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args): pass
     def send(self,value,code=200,content_type='application/json'):
@@ -138,17 +178,20 @@ class Handler(BaseHTTPRequestHandler):
                     result,available=playback_state()
                     c=config(); cred=credentials()
                     return self.send({'demo':DEMO,'home_test':HOME_TEST,'version':os.getenv('APP_VERSION','dev'),'state':result,'agent_available':available,'config':public_config(c),
-                        'telemetry':telemetry_status(),'protect':{'configured':bool(cred),'host':cred.get('host',''),'pinned':bool(cred.get('fingerprint')),
+                        'telemetry':telemetry_status(),'maintenance':maintenance_status(),'protect':{'configured':bool(cred),'host':cred.get('host',''),'pinned':bool(cred.get('fingerprint')),
                         'auth_mode':cred.get('auth_mode','api_key') if cred else 'local','username':cred.get('username',''),
                         'has_api_key':bool(cred.get('api_key')),'has_password':bool(cred.get('password'))}})
                 if self.path=='/api/update':
-                    repo=config()['github_repo']
-                    if not repo: raise ValueError('Zuerst ein GitHub-Repository in den Einstellungen eintragen.')
-                    try:
-                        req=urllib.request.Request('https://api.github.com/repos/'+repo+'/releases/latest',headers={'Accept':'application/vnd.github+json','User-Agent':'oma-tv'})
-                        with urllib.request.urlopen(req,timeout=8) as r: release=json.load(r)
-                        return self.send({'version':release['tag_name'],'current':os.getenv('APP_VERSION','dev'),'message':'Installation über den privaten Wartungszugang.'})
-                    except (OSError,ValueError,KeyError): return self.send({'error':'Kein öffentliches GitHub-Release erreichbar. Repository und Verbindung prüfen.'},502)
+                    info=release_info.release(refresh=True)
+                    current=os.getenv('APP_VERSION','dev')
+                    try: available=release_info.newer(info['version'],current)
+                    except ValueError: available=info['version']!=current
+                    support=maintenance_status()
+                    return self.send(info|{'current':current,'available':available,'maintenance':support,
+                        'can_install':bool(available and support.get('available') and support.get('persistent') and not (support.get('job') or {}).get('busy')),
+                        'message':'Einstellungen werden vor der Installation gesichert.'})
+                if self.path=='/api/update/status':
+                    return self.send(maintenance_status())
                 return self.send({'error':'Nicht gefunden'},404)
             name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/tv':'tv.html','/tv/':'tv.html','/tv.css':'tv.css','/tv.js':'tv.js','/tv-navigation.js':'tv-navigation.js','/tv-remote.js':'tv-remote.js','/telemetry-view.js':'telemetry-view.js','/icon.svg':'icon.svg','/icon-512.png':'icon-512.png','/apple-touch-icon.png':'apple-touch-icon.png'}.get(self.path)
             if not name: return self.send({'error':'Nicht gefunden'},404)
@@ -177,6 +220,11 @@ class Handler(BaseHTTPRequestHandler):
                     sid=secrets.token_urlsafe(32);sessions[sid]={'expires':now+43200,'pending':None}
                     failures.pop(ip,None)
                 return self.send({'token':sid})
+            if self.path=='/api/update/progress':
+                watch=body.get('watch')
+                if not isinstance(watch,str) or not 32<=len(watch)<=128:
+                    return self.send({'error':'Statusfreigabe ungültig.'},401)
+                return self.send(maintenance_request('watch',{'watch':watch}))
             if self.path=='/api/tv/provision':
                 # Trusted local Pi launcher uses the existing host-agent credential.
                 if self.client_address[0] not in ('127.0.0.1', '::1') or len(TOKEN)<24 or not secrets.compare_digest(self.sid(), TOKEN):
@@ -202,6 +250,16 @@ class Handler(BaseHTTPRequestHandler):
                 if body.get('action') not in ('on','off','menu'): raise ValueError('Diese Aktion ist in der TV-Ansicht nicht verfügbar.')
                 return self.send(perform_action(body['action']))
             if not self.authorized(): return self.send({'error':'Bitte erneut anmelden.','reauth':True},401)
+            if self.path in ('/api/config','/api/protect/connect','/api/protect/select','/api/tv/revoke') and not DEMO:
+                job=maintenance_status().get('job') or {}
+                if job.get('busy'):
+                    return self.send({'error':'Aktualisierung läuft. Einstellungen danach ändern.'},409)
+            if self.path=='/api/update/install':
+                if DEMO: raise ValueError('Im Heimtest werden keine Pi-Updates installiert.')
+                if body.get('confirm') is not True or set(body)-{'version','confirm'}:
+                    raise ValueError('Die ausgewählte Version zuerst in der Oberfläche bestätigen.')
+                release_info.version(body.get('version'))
+                return self.send(maintenance_request('update',{'version':body['version']}),202)
             if self.path=='/api/tv/pair':
                 with lock:
                     access=read('tv-access.json',{})
@@ -270,6 +328,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(perform_action(body.get('action')))
             return self.send({'error':'Nicht gefunden'},404)
         except ProtectError as e: self.send({'error':str(e),**e.details},e.code)
+        except MaintenanceError as e: self.send({'error':str(e)},e.code)
         except (ValueError,TypeError,KeyError) as e: self.send({'error':str(e)},400)
         except Exception: self.send({'error':'Aktion fehlgeschlagen. Einstellungen und Pi-Dienst prüfen.'},502)
 

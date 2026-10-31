@@ -11,6 +11,7 @@ backups
 
 .runtime
 .install.json
+.maintenance/
 
 .update.lock
 

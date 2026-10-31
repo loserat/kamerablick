@@ -107,7 +107,7 @@ class Installation(unittest.TestCase):
             if args[:2]==['docker','create']:return CompletedProcess(args,0,'stage-container\n','')
             if args[:2]==['docker','cp']:shutil.copytree(staged,Path(args[-1]))
             return CompletedProcess(args,0,'','')
-        with patch.object(install,'run_command',side_effect=command) as docker,patch.object(install.subprocess,'run') as system,patch.dict(os.environ,{'OMA_TV_IMAGE':'foreign:version','APP_VERSION':'foreign'}):
+        with patch.object(install,'run_command',side_effect=command) as docker,patch.object(install.subprocess,'run') as system,patch.object(install,'wait_maintenance'),patch.dict(os.environ,{'OMA_TV_IMAGE':'foreign:version','APP_VERSION':'foreign'}):
             install.install_project(self.root,self.home,image=image)
         env=install.read_env(self.root/'.env')
         self.assertEqual(env['OMA_TV_IMAGE'],image);self.assertEqual(env['APP_VERSION'],'v1.0.0')

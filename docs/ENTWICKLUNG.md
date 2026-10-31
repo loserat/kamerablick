@@ -34,9 +34,12 @@ python3 tests/docker_acceptance.py --platform linux/arm/v7
 python3 tests/cec_acceptance.py
 python3 tests/player_acceptance.py
 python3 tests/stream_acceptance.py
+python3 tests/browser_update_acceptance.py
 ```
 
 Die Programme bauen eigene Testimages, verwenden eigene Container/Volumes und räumen diese anschließend wieder auf. Container- und ARMv7-Prüfungen sind keine Geräteabnahme. Der CEC-Test verwendet den echten Helfer ohne angeschlossenen Adapter. Die Player-Prüfung verwendet erzeugtes Video und unsichtbare Ausgabe. Der Streamtest nutzt RTSP/RTSPS in einem internen Docker-Netz mit MediaMTX; das Werkzeug gehört nicht zur Produktinstallation.
+
+Das Browser-Update-Labor prüft echte Containerwechsel, Sicherung, fehlerbedingte Rückkehr und Wiederherstellung nach einer Unterbrechung. GitHub-Antworten, Image-Download und systemd werden dort durch Testgegenstellen ersetzt. Ausschließlich sein isolierter Wartungs-Testcontainer erhält Zugriff auf die Docker-Engine; das Dashboard erhält keinen Docker-Socket.
 
 Erzeugte JSON-Prüfberichte und private lokale Nachweise außerhalb des Repositories archivieren. Sie sind Momentaufnahmen eines Testlaufs; die reproduzierbaren Prüfprogramme bleiben in Git. Bekannte Grenzen und die noch offene Prüfung am Pi stehen in [ABNAHME.md](ABNAHME.md).
 

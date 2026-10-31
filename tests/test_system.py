@@ -183,6 +183,37 @@ class ApiTest(unittest.TestCase):
             self.assertEqual(self.call('/api/tv/action',{'action':'on'},token=access)[0],400)
             hardware.assert_not_called()
     def test_health(self): self.assertEqual(self.call('/healthz')[1],{'ok':True})
+    def test_browser_update_requires_admin_confirmation_and_real_pi_mode(self):
+        body={'version':'v1.0.1','confirm':True}
+        self.assertEqual(self.call('/api/update/install',body,token='invalid')[0],401)
+        self.assertEqual(self.call('/api/update/install',body)[0],400)
+        server.DEMO=False
+        support={'available':True,'persistent':True,'job':None}
+        with patch.object(server,'maintenance_status',return_value=support),patch.object(server,'maintenance_request',return_value={'job':{'phase':'queued'},'watch':'w'*43}) as host:
+            self.assertEqual(self.call('/api/update/install',body|{'confirm':False})[0],400)
+            self.assertEqual(self.call('/api/update/install',body|{'command':'touch /tmp/x'})[0],400)
+            self.assertEqual(self.call('/api/update/install',body|{'version':'latest'})[0],400)
+            self.assertEqual(self.call('/api/update/install',body)[0],202)
+            host.assert_called_once_with('update',{'version':'v1.0.1'})
+    def test_release_source_is_fixed_and_progress_capability_is_read_only(self):
+        server.DEMO=False
+        info={'version':'v1.0.1','notes':'test release'}
+        support={'available':True,'persistent':True,'job':None}
+        with patch.dict(os.environ,{'APP_VERSION':'v1.0.0'}),patch.object(server.release_info,'release',return_value=info) as release,patch.object(server,'maintenance_status',return_value=support):
+            server.save('config.json',server.DEFAULT|{'github_repo':'untrusted/other-project'})
+            code,result=self.call('/api/update')
+            self.assertEqual(code,200);self.assertTrue(result['can_install'])
+            release.assert_called_once_with(refresh=True)
+        with patch.object(server,'maintenance_request',return_value={'job':{'phase':'verifying'}}) as host:
+            self.assertEqual(self.call('/api/update/progress',{'watch':'short'},token='invalid')[0],401)
+            code,result=self.call('/api/update/progress',{'watch':'w'*43},token='invalid')
+            self.assertEqual(code,200);self.assertEqual(result['job']['phase'],'verifying')
+            host.assert_called_once_with('watch',{'watch':'w'*43})
+            self.assertEqual(self.call('/api/config',{'gpio_pin':18},token='w'*43)[0],401)
+    def test_configuration_writes_wait_for_a_running_update(self):
+        server.DEMO=False
+        with patch.object(server,'maintenance_status',return_value={'job':{'busy':True}}):
+            self.assertEqual(self.call('/api/config',{'gpio_pin':18})[0],409)
 
 class ProtectTLS(unittest.TestCase):
     @classmethod

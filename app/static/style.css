@@ -5,3 +5,5 @@
 .hero>*{min-width:0}.screen{min-width:0;width:100%}@media(max-width:800px){.hero{grid-template-columns:minmax(0,1fr)}.hero .actions button{min-width:0}}
 
 .brand img.brand-icon{display:block;flex-shrink:0;width:38px;height:38px}
+
+.update-progress{border-color:#9fbd8b;background:#f4f8ee}.update-progress progress{width:100%;height:9px;accent-color:var(--green);margin:14px 0}.release-notes{white-space:pre-wrap;font-size:12px;line-height:1.8;max-height:320px;overflow:auto}#update-confirm{width:min(90vw,540px);border:1px solid var(--line);border-radius:18px;padding:30px;color:#243b31;box-shadow:0 25px 100px #132f2640}#update-confirm::backdrop{background:#14251f99}#update-confirm p{font-size:13px}#update-confirm .actions{justify-content:flex-end}
