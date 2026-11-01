@@ -7,7 +7,7 @@ NVR-Zugang, Kameraauswahl, Standbild und manuell eingetragene Kameras lassen sic
 Mit installierter Docker Engine beziehungsweise Docker Desktop und Compose v2:
 
 ```sh
-git clone --branch v0.1.5 https://github.com/loserat/kamerablick.git ~/kamerablick-heimtest
+git clone --branch v0.1.6 https://github.com/loserat/kamerablick.git ~/kamerablick-heimtest
 cd ~/kamerablick-heimtest
 cp .env.example .env
 ```

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -17,6 +18,34 @@ import session
 
 
 class Installation(unittest.TestCase):
+    def test_environment_file_is_an_absolute_scalar_path_for_every_host_service(self):
+        install.prepare(self.root, self.home)
+        expected = 'EnvironmentFile=' + str(self.home / '.config/oma-tv/agent.env')
+        for name in ('oma-tv-agent.service', 'oma-tv-kiosk.service', 'oma-tv-maintenance.service'):
+            with self.subTest(service=name):
+                lines = (self.home / '.config/systemd/user' / name).read_text().splitlines()
+                self.assertEqual([line for line in lines if line.startswith('EnvironmentFile=')], [expected])
+                self.assertTrue(Path(expected.split('=', 1)[1]).is_absolute())
+        self.assertEqual(install.read_env(self.home / '.config/oma-tv/agent.env')['AGENT_TOKEN'],
+            install.read_env(self.root / '.env')['AGENT_TOKEN'])
+
+    @unittest.skipUnless(shutil.which('systemd-analyze'), 'Native systemd verifier is only available on Linux')
+    def test_native_systemd_parser_accepts_paths_and_reproduces_legacy_key_failure(self):
+        home = self.home / 'desktop user'
+        install.prepare(self.root, home)
+        directory = home / '.config/systemd/user'
+        paths = [str(directory / name) for name in ('oma-tv-session.target', 'oma-tv-agent.service',
+            'oma-tv-kiosk.service', 'oma-tv-maintenance.service')]
+        fixed = subprocess.run(['systemd-analyze', 'verify', '--man=no', *paths], capture_output=True, text=True, timeout=20)
+        self.assertEqual(fixed.returncode, 0, fixed.stderr)
+        self.assertNotIn('EnvironmentFile= path is not absolute', fixed.stderr)
+        maintenance = directory / 'oma-tv-maintenance.service'
+        text = maintenance.read_text()
+        old = 'EnvironmentFile=' + str(home / '.config/oma-tv/agent.env')
+        maintenance.write_text(text.replace(old, 'EnvironmentFile="' + old.split('=', 1)[1] + '"'))
+        broken = subprocess.run(['systemd-analyze', 'verify', '--man=no', *paths], capture_output=True, text=True, timeout=20)
+        self.assertIn('EnvironmentFile= path is not absolute', broken.stderr)
+
     def test_dashboard_lan_default_and_loopback_opt_out_preserve_private_agent(self):
         settings=install.prepare(self.root,self.home)
         self.assertEqual(settings['BIND'],'0.0.0.0')

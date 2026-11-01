@@ -199,11 +199,11 @@ def prepare(root, home, image=None, runtime_source=None):
     runtime = root / '.runtime/current'
     def service(description, script, restart):
         # systemd environment files handle literal paths without invoking a shell.
-        return '[Unit]\nDescription=' + description + '\nPartOf=oma-tv-session.target\n\n[Service]\nEnvironmentFile="' + str(agent_env) + '"\nExecStart=/usr/bin/python3 "' + str(runtime / script) + '"\nRestart=' + restart + '\nRestartSec=5\nNoNewPrivileges=true\nTimeoutStopSec=15\n'
+        return '[Unit]\nDescription=' + description + '\nPartOf=oma-tv-session.target\n\n[Service]\nEnvironmentFile=' + str(agent_env) + '\nExecStart=/usr/bin/python3 "' + str(runtime / script) + '"\nRestart=' + restart + '\nRestartSec=5\nNoNewPrivileges=true\nTimeoutStopSec=15\n'
     managed_write(user_units / 'oma-tv-agent.service', service('Kamerablick Taster und TV', 'agent.py', 'on-failure'))
     managed_write(user_units / 'oma-tv-kiosk.service', service('Kamerablick TV Ansicht', 'kiosk.py', 'always'))
     managed_write(user_units / 'oma-tv-session.target', '[Unit]\nDescription=Kamerablick grafische Sitzung\nWants=oma-tv-agent.service oma-tv-kiosk.service\n')
-    managed_write(user_units / 'oma-tv-maintenance.service', '[Unit]\nDescription=Kamerablick Updates\n\n[Service]\nEnvironmentFile="' + str(agent_env) + '"\nExecStart=/usr/bin/python3 "' + str(runtime / 'maintenance.py') + '" --root "' + str(root) + '"\nRestart=on-failure\nRestartSec=3\nNoNewPrivileges=true\nUMask=0077\nTimeoutStopSec=10\n\n[Install]\nWantedBy=default.target\n')
+    managed_write(user_units / 'oma-tv-maintenance.service', '[Unit]\nDescription=Kamerablick Updates\n\n[Service]\nEnvironmentFile=' + str(agent_env) + '\nExecStart=/usr/bin/python3 "' + str(runtime / 'maintenance.py') + '" --root "' + str(root) + '"\nRestart=on-failure\nRestartSec=3\nNoNewPrivileges=true\nUMask=0077\nTimeoutStopSec=10\n\n[Install]\nWantedBy=default.target\n')
     managed_write(desktop, '[Desktop Entry]\nType=Application\nName=Kamerablick\nExec=/usr/bin/python3 "' + str(runtime / 'session.py') + '"\nTerminal=false\n')
     switch_runtime(root, release)
     old_manifest=json.loads((root/'.install.json').read_text()) if (root/'.install.json').exists() else {}
