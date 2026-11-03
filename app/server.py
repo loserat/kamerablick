@@ -303,6 +303,14 @@ class Handler(BaseHTTPRequestHandler):
                     'camera_name':selected['name'],'camera_state':selected['state'],'camera_count':len(rows),
                     'snapshot_ok':bool(image),'stream_configured':bool(stream),'elapsed_ms':round((time.monotonic()-start)*1000),
                     'hardware_tested':False})
+            if self.path=='/api/protect/preview':
+                if body:
+                    raise ValueError('Die Vorschau verwendet ausschließlich die eingerichtete Kamera.')
+                selected=config()
+                cred=credentials()
+                if selected.get('camera_source')!='protect' or not selected.get('camera_id') or not cred:
+                    raise ValueError('Zuerst eine Protect-Kamera verbinden und übernehmen.')
+                return self.send(Protect(cred).snapshot(selected['camera_id']),content_type='image/jpeg')
             if self.path in ('/api/protect/select','/api/protect/snapshot'):
                 pending=sessions[self.sid()].get('pending')
                 if not pending or pending['expires']<time.time(): raise ValueError('Bitte Protect erneut verbinden. Die Einrichtung ist abgelaufen.')

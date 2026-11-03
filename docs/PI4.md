@@ -39,7 +39,7 @@ docker compose version
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.6 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.7 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 sudo loginctl enable-linger "$USER"
 python3 pi/install.py --check
@@ -48,7 +48,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen aus der Prüfung zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.6
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.7
 ```
 
 Das öffentliche Image enthält bereits **ARM64**; Docker wählt diese Variante automatisch. Für den Wechsel vom Pi 2B zum Pi 4B ist kein neues Anwendungsimage nötig. Der Pi muss den Container nicht selbst bauen.
@@ -69,4 +69,4 @@ App-Updates erfolgen nach der einmaligen Einrichtung unter **Wartung** in der Ob
 
 ## Prüfstand
 
-Version v0.1.6 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen und ARMv7-Prüfungen unter Emulation liegen vor. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.
+Version v0.1.7 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen liegen vor; ARMv7 wurde in früheren Versionen zusätzlich unter Emulation geprüft. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.

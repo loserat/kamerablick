@@ -52,6 +52,25 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(self.call('/api/status')[0],401)
         for _ in range(8): self.assertEqual(self.call('/api/login',{'password':'wrong'})[0],401)
         self.assertEqual(self.call('/api/login',{'password':'wrong'})[0],429)
+    def test_overview_snapshot_requires_admin_and_uses_only_saved_camera(self):
+        self.assertEqual(self.call('/api/protect/preview',{},token='invalid')[0],401)
+        self.assertEqual(self.call('/api/protect/preview',{})[0],400)
+        server.save('config.json',server.DEFAULT|{'camera_source':'protect','camera_id':'saved-camera'})
+        server.save('protect.json',{'host':'https://console.invalid','api_key':'private-test-key'})
+        self.assertEqual(self.call('/api/protect/preview',{'camera_id':'other-camera'})[0],400)
+        with patch.object(server,'Protect') as protect:
+            protect.return_value.snapshot.return_value=b'\xff\xd8test-jpeg'
+            conn=http.client.HTTPConnection('127.0.0.1',self.port,timeout=5)
+            conn.request('POST','/api/protect/preview',body='{}',headers={'Authorization':'Bearer '+self.token,'Content-Type':'application/json'})
+            response=conn.getresponse()
+            self.assertEqual(response.status,200)
+            self.assertEqual(response.getheader('Content-Type'),'image/jpeg')
+            self.assertEqual(response.getheader('Cache-Control'),'no-store')
+            self.assertEqual(response.read(),b'\xff\xd8test-jpeg')
+            conn.close()
+            protect.return_value.snapshot.assert_called_once_with('saved-camera')
+            self.assertEqual(protect.call_args.args[0]['api_key'],'private-test-key')
+        self.assertEqual(self.call('/api/protect/preview',{},token='invalid')[0],401)
     def test_cec_receiver_is_separate_from_admin_and_tv_access(self):
         with patch.object(server,'TOKEN','host-key-'+'a'*32):
             code,local=self.call('/api/tv/provision',{},'host-key-'+'a'*32)

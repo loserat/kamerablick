@@ -1,12 +1,12 @@
 services:
   dashboard:
-    image: ghcr.io/loserat/kamerablick:v0.1.6
+    image: ghcr.io/loserat/kamerablick:v0.1.7
     restart: unless-stopped
     environment:
       HOME_TEST_MODE: 'true'
       DEMO_MODE: 'true'
       DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:?Bitte ein eigenes Dashboard-Passwort in .env setzen}
-      APP_VERSION: v0.1.6
+      APP_VERSION: v0.1.7
       DATA_DIR: /data
       BIND: 0.0.0.0
       PORT: '8088'

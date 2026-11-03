@@ -7,7 +7,7 @@ NVR-Zugang, Kameraauswahl, Standbild und manuell eingetragene Kameras lassen sic
 Mit installierter Docker Engine beziehungsweise Docker Desktop und Compose v2:
 
 ```sh
-git clone --branch v0.1.6 https://github.com/loserat/kamerablick.git ~/kamerablick-heimtest
+git clone --branch v0.1.7 https://github.com/loserat/kamerablick.git ~/kamerablick-heimtest
 cd ~/kamerablick-heimtest
 cp .env.example .env
 ```
@@ -22,22 +22,26 @@ docker compose -f compose.home-test.yaml up -d
 
 ## Den NVR in der App anmelden
 
-1. **Kamera einrichten** öffnen und die lokale NVR-Adresse eingeben.
+1. **Kamera** öffnen und die lokale NVR-Adresse eingeben.
 2. **Lokaler UniFi-Benutzer** auswählen, lokalen Benutzernamen und Passwort eintragen. Ein ui.com-Konto beziehungsweise eine Anmeldung mit MFA wird nicht unterstützt.
 3. Falls die Konsole ein eigenes Zertifikat verwendet, den angezeigten SHA-256-Fingerabdruck über einen vertrauenswürdigen Zugang mit der Konsole vergleichen und erst dann bestätigen.
-4. Anmelden, eine erreichbare Kamera auswählen und das Standbild prüfen. Qualität auswählen und die Kamera übernehmen.
+4. Verbinden, eine erreichbare Kamera auswählen und das Standbild prüfen. Qualität auswählen und die Kamera übernehmen.
 
-Der lokale Anmeldeweg nutzt die UniFi-OS-Sitzung. Je nach Protect-Version wird für die Stream-Schnittstelle zusätzlich ein API-Schlüssel benötigt. Er kann im selben Formular unter **Zusätzlicher API-Schlüssel für Streams und Ereignisse** eingetragen werden. Laufende Bewegungsereignisse verwenden die öffentliche Integration-API und benötigen diesen Schlüssel. Alternativ lässt sich direkt die Anmeldung **Protect-API-Schlüssel** wählen.
+Der lokale Anmeldeweg nutzt die UniFi-OS-Sitzung. Je nach Protect-Version wird für die Stream-Schnittstelle zusätzlich ein API-Schlüssel benötigt. Er kann im selben Formular unter **API-Schlüssel (optional)** eingetragen werden. Laufende Bewegungsereignisse verwenden die öffentliche Integration-API und benötigen diesen Schlüssel. Alternativ lässt sich direkt die Anmeldung **API-Schlüssel** wählen.
 
 Für die lokale Anmeldung werden bestehende RTSP-Freigaben erkannt. Fehlt eine Freigabe oder liefert die Protect-Version keine Stream-Aliase mehr, zeigt die Oberfläche den nächsten Schritt an. Ohne API-Schlüssel werden keine privaten Kamera-Einstellungen umgeschrieben. Mit Schlüssel kann ein fehlender Stream nach ausdrücklicher Freigabe im Assistenten aktiviert werden.
 
 Passwort, API-Schlüssel und Sitzungs-Cookies werden nicht an die Browser-Antworten angehängt. Der lokale Benutzername ist für den angemeldeten Dashboard-Benutzer sichtbar. Passwort und Schlüssel werden erst zusammen mit der übernommenen Kamera in der privaten lokalen Konfiguration gespeichert; ein abgebrochener Assistent überschreibt keinen vorhandenen Zugang. UniFi-Sitzungs-Cookies werden nur im Speicher gehalten.
 
+## Standbild in der Übersicht
+
+Nach dem Übernehmen der Protect-Kamera unter **Übersicht → Standbild laden** ein Bild abrufen. **Aktualisieren** lädt ein neues Bild; der angezeigte Zeitpunkt bezeichnet den Abruf. Es gibt keine automatische Bildabfrage. Beim Wechsel der Kamera oder Abmelden wird die Vorschau entfernt. Manuelle Streams und Beispielkameras haben hier kein Standbild. Das Livebild läuft später direkt auf dem Pi am Fernseher.
+
 ## Manuell hinzufügen und prüfen
 
-Mit **Kamera manuell hinzufügen** einen Namen und die vorhandene RTSP-/RTSPS-Adresse eingeben. **Kamera speichern und verwenden** wählt diese Kamera für die TV-Ansicht aus. Der vorhandene NVR-Zugang bleibt erhalten. Aktuell gibt es eine aktive TV-Kamera.
+Mit **Streamadresse verwenden** einen Namen und die vorhandene RTSP-/RTSPS-Adresse eingeben. **Kamera speichern** wählt diese Kamera für die TV-Ansicht aus. Der vorhandene NVR-Zugang bleibt erhalten. Aktuell gibt es eine aktive TV-Kamera.
 
-Unter **Wartung → NVR und Kamera prüfen** werden die gespeicherte NVR-Anmeldung, Kameraliste, das Standbild und die Stream-Adresse erneut gelesen. Eine erfolgreiche Prüfung bestätigt noch keine laufende Videowiedergabe. Bei einer manuell eingegebenen Kamera ohne NVR-Zuordnung erfolgt die Livebildprüfung später am Pi.
+Unter **Wartung → Verbindung prüfen** werden die gespeicherte NVR-Anmeldung, Kameraliste, das Standbild und die Stream-Adresse erneut gelesen. Eine erfolgreiche Prüfung bestätigt noch keine laufende Videowiedergabe. Bei einer manuell eingegebenen Kamera ohne NVR-Zuordnung erfolgt die Livebildprüfung später am Pi.
 
 NVR-Zugang, Bildqualität, aktive Kamera, GPIO-Pin und Abschaltzeit werden in der Oberfläche verwaltet. Betriebssystem, Docker, WLAN, SSH und VPN werden einmalig am Gerät eingerichtet. App-Updates auf einer verwalteten Pi-Installation erfolgen über [Browser-Updates](BROWSER-UPDATES.md). Der getrennte Heimtest installiert keine Pi-Updates.
 

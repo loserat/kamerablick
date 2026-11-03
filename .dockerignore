@@ -12,6 +12,8 @@ backups
 .runtime
 .install.json
 .maintenance/
+**/__pycache__/
+**/*.pyc
 
 .update.lock
 

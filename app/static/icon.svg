@@ -1,18 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">Kamerablick</title>
-  <desc id="desc">Ein heller Fernseher mit Kameraauge auf waldgrünem Hintergrund.</desc>
-  <defs>
-    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#32694d"/>
-      <stop offset="1" stop-color="#163d2c"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="116" fill="url(#green)"/>
-  <rect x="76" y="117" width="360" height="248" rx="54" fill="#f2f5e8"/>
-  <rect x="95" y="136" width="322" height="210" rx="36" fill="#214b36"/>
-  <path d="M139 241c32-47 72-72 117-72s85 25 117 72c-32 47-72 72-117 72s-85-25-117-72Z" fill="#d0e3b3"/>
-  <circle cx="256" cy="241" r="48" fill="#214b36"/>
-  <circle cx="270" cy="226" r="13" fill="#f2f5e8"/>
-  <path d="M256 365v29m-48 0h96" fill="none" stroke="#f2f5e8" stroke-width="20" stroke-linecap="round"/>
-  <circle cx="396" cy="115" r="30" fill="#9ac785" stroke="#214b36" stroke-width="12"/>
+  <desc id="desc">Ein Fernseher mit Kameraauge in Schwarz und Weiß.</desc>
+
+  <rect width="512" height="512" rx="116" fill="#25262a"/>
+  <rect x="76" y="117" width="360" height="248" rx="54" fill="#f5f5f7"/>
+  <rect x="95" y="136" width="322" height="210" rx="36" fill="#25262a"/>
+  <path d="M139 241c32-47 72-72 117-72s85 25 117 72c-32 47-72 72-117 72s-85-25-117-72Z" fill="#d4d6dc"/>
+  <circle cx="256" cy="241" r="48" fill="#25262a"/>
+  <circle cx="270" cy="226" r="13" fill="#f5f5f7"/>
+  <path d="M256 365v29m-48 0h96" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="396" cy="115" r="30" fill="#a2a7b2" stroke="#25262a" stroke-width="12"/>
 </svg>

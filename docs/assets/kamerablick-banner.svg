@@ -1,42 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="banner-title banner-desc">
-<title id="banner-title">Kamerablick — Ein Knopf. Alles im Blick.</title>
-<desc id="banner-desc">Kamerablick verbindet Raspberry Pi, Kamera und Fernseher. Waldgrünes Banner mit App-Icon und einer Fernseher-Illustration.</desc>
-<rect width="1280" height="420" rx="28" fill="#172d22"/>
-<circle cx="1140" cy="40" r="320" fill="#213e2c"/>
-<circle cx="1220" cy="390" r="240" fill="#284731"/>
-<svg xmlns="http://www.w3.org/2000/svg" x="70" y="66" width="96" height="96" viewBox="0 0 512 512" role="img" aria-labelledby="icon-title icon-desc">
-  <title id="icon-title">Kamerablick</title>
-  <desc id="icon-desc">Ein heller Fernseher mit Kameraauge auf waldgrünem Hintergrund.</desc>
-  <defs>
-    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#32694d"/>
-      <stop offset="1" stop-color="#163d2c"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="116" fill="url(#green)"/>
-  <rect x="76" y="117" width="360" height="248" rx="54" fill="#f2f5e8"/>
-  <rect x="95" y="136" width="322" height="210" rx="36" fill="#214b36"/>
-  <path d="M139 241c32-47 72-72 117-72s85 25 117 72c-32 47-72 72-117 72s-85-25-117-72Z" fill="#d0e3b3"/>
-  <circle cx="256" cy="241" r="48" fill="#214b36"/>
-  <circle cx="270" cy="226" r="13" fill="#f2f5e8"/>
-  <path d="M256 365v29m-48 0h96" fill="none" stroke="#f2f5e8" stroke-width="20" stroke-linecap="round"/>
-  <circle cx="396" cy="115" r="30" fill="#9ac785" stroke="#214b36" stroke-width="12"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="270" viewBox="0 0 1280 270" role="img" aria-labelledby="banner-title banner-desc">
+<title id="banner-title">Kamerablick</title>
+<desc id="banner-desc">Kamerablick für Raspberry Pi und UniFi Protect. Schlichtes graues Banner mit App-Icon.</desc>
+<rect x="1" y="1" width="1278" height="268" rx="18" fill="#f6f6f7" stroke="#e3e4e7"/>
+<g font-family="Arial, sans-serif">
+<text x="62" y="118" fill="#25262a" font-size="52" font-weight="700" letter-spacing="-1.5">Kamerablick</text>
+<text x="65" y="160" fill="#62646d" font-size="21">UniFi Protect auf dem Fernseher.</text>
+<text x="65" y="208" fill="#777981" font-size="15">Raspberry Pi · Docker · HDMI-CEC</text>
+</g>
+<svg x="1030" y="58" width="150" height="150" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Kamerablick</title>
+  <desc id="desc">Ein Fernseher mit Kameraauge in Schwarz und Weiß.</desc>
+
+  <rect width="512" height="512" rx="116" fill="#25262a"/>
+  <rect x="76" y="117" width="360" height="248" rx="54" fill="#f5f5f7"/>
+  <rect x="95" y="136" width="322" height="210" rx="36" fill="#25262a"/>
+  <path d="M139 241c32-47 72-72 117-72s85 25 117 72c-32 47-72 72-117 72s-85-25-117-72Z" fill="#d4d6dc"/>
+  <circle cx="256" cy="241" r="48" fill="#25262a"/>
+  <circle cx="270" cy="226" r="13" fill="#f5f5f7"/>
+  <path d="M256 365v29m-48 0h96" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="396" cy="115" r="30" fill="#a2a7b2" stroke="#25262a" stroke-width="12"/>
 </svg>
 
-<g font-family="Inter, Arial, sans-serif">
-<text x="188" y="110" fill="#f3f5e8" font-size="42" font-weight="700" letter-spacing="-1.6">Kamerablick</text>
-<text x="191" y="142" fill="#afc398" font-size="12" font-weight="600" letter-spacing="3">DEIN KAMERA-TV</text>
-<text x="70" y="239" fill="#f3f5e8" font-size="52" font-weight="700" letter-spacing="-2">Ein Knopf.</text>
-<text x="70" y="299" fill="#d0e3b3" font-size="52" font-weight="700" letter-spacing="-2">Alles im Blick.</text>
-<text x="72" y="356" fill="#aec1a7" font-size="17">Raspberry Pi · UniFi Protect · HDMI-CEC</text>
-<rect x="744" y="88" width="428" height="264" rx="28" fill="#f1f4e6"/>
-<rect x="756" y="100" width="404" height="240" rx="18" fill="#2e4b36"/>
-<rect x="781" y="122" width="148" height="24" rx="12" fill="#203c2a"/>
-<circle cx="795" cy="134" r="3" fill="#b9d395"/>
-<text x="805" y="138" fill="#d0e3b3" font-size="10" letter-spacing="1">EINFACH ANSEHEN</text>
-<path d="M839 218c33-40 73-59 119-59s86 19 119 59c-33 40-73 59-119 59s-86-19-119-59Z" fill="#d0e3b3"/>
-<circle cx="958" cy="218" r="37" fill="#2e4b36"/>
-<circle cx="969" cy="206" r="10" fill="#f3f5e8"/>
-<text x="958" y="313" text-anchor="middle" fill="#bfd1b0" font-size="12">Wer ist vor der Tür?</text>
-<path d="M958 352v23m-42 0h84" fill="none" stroke="#d0e3b3" stroke-width="12" stroke-linecap="round"/>
-</g></svg>
+</svg>

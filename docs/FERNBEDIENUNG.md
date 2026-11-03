@@ -16,7 +16,7 @@ Lautstärke, Ziffern und die Einschalt-/Standbytaste der Fernbedienung werden ni
 
 1. HDMI-CEC im TV aktivieren und den HDMI-Eingang des Pi auswählen.
 2. Die Kamerablick-TV-Anwendung auf dem Pi starten. Ein über das Dashboard geöffnetes zusätzliches TV-Fenster erhält keinen Fernbedienungsempfang.
-3. Im geschützten Dashboard „Wartung → Tastenempfang prüfen“ öffnen. Adapterverbindung und TV-Empfänger müssen erkennbar sein.
+3. Im geschützten Dashboard „Wartung → Fernbedienung“ öffnen. Adapterverbindung und TV-Empfänger müssen erkennbar sein.
 4. Jede Pfeiltaste, OK und Zurück einzeln drücken. Angezeigte Taste und Auswahlrahmen vergleichen.
 5. OK mehrere Sekunden halten: Es darf keine Folge unbeabsichtigter Aktionen geben. Nach Loslassen muss der nächste Druck funktionieren.
 6. Kamerabild öffnen und mit Zurück verlassen. Der Player muss schließen, der TV eingeschaltet bleiben und das Menü wieder bedienbar sein.

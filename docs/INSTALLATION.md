@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.6
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.7
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -70,7 +70,7 @@ ssh -L 8099:127.0.0.1:8088 BENUTZER@PI-ADRESSE
 
 Anschließend `http://127.0.0.1:8099` öffnen. Es ist keine öffentliche Portfreigabe vorgesehen.
 
-Unter „Kamera einrichten“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Kamera manuell hinzufügen“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
+Unter „Kamera“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Streamadresse verwenden“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
 
 VPN und SSH sind getrennte Systemkomponenten und noch nicht eingerichtet. Es wird keine öffentliche Portfreigabe für das Dashboard oder Protect benötigt. Die SSH-Weiterleitung und der tatsächliche Fernzugriff werden später von einem anderen Netzwerk aus getestet.
 
@@ -80,7 +80,7 @@ Bei ausgeschaltetem Pi einen spannungsfreien Schließer zwischen GPIO17 (BCM; ph
 
 TV-CEC im Fernseher aktivieren. Im Dashboard zuerst Kamera und TV-Befehle prüfen, danach den Taster. GPIO-Taster und CEC funktionieren erst mit passenden Geräteberechtigungen und tatsächlich angeschlossener Hardware.
 
-Die TV-Ansicht ist mit Tastatur nutzbar. CEC-Empfang für Pfeile, OK und Zurück ist implementiert; ob die TV-Fernbedienung diese Tasten weitergibt, muss am Fernseher geprüft werden. Unter „Wartung → Tastenempfang prüfen“ stehen Adapterzustand, letzte empfangene Taste und Verbindung zur lokalen TV-Ansicht. Vorgehen und Grenzen: [Fernbedienung](FERNBEDIENUNG.md).
+Die TV-Ansicht ist mit Tastatur nutzbar. CEC-Empfang für Pfeile, OK und Zurück ist implementiert; ob die TV-Fernbedienung diese Tasten weitergibt, muss am Fernseher geprüft werden. Unter „Wartung → Fernbedienung“ stehen Adapterzustand, letzte empfangene Taste und Verbindung zur lokalen TV-Ansicht. Vorgehen und Grenzen: [Fernbedienung](FERNBEDIENUNG.md).
 
 ## Dienste und Diagnose
 

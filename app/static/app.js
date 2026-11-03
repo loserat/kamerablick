@@ -1,22 +1,104 @@
 let token=sessionStorage.getItem('oma-token')||'', latest=null, selectedCamera='', candidatePin='', candidateHost='', snapshotUrl='', noticeTimer, polling=false;
+let overviewSnapshotUrl='', overviewCameraKey='', overviewRequest=0, previewBusy=false;
 const $=s=>document.querySelector(s);
-const pages={overview:['Alles im Blick.','Kamerabild einschalten und entspannt nachsehen.'],camera:['Deine Kamera. Einfach verbunden.','Protect verbinden, Kamera auswählen, fertig.'],settings:['So passt es für euch.','Taster und Abschaltung einmal in Ruhe einstellen.'],maintenance:['Gut betreut. Auch von unterwegs.','Verbindung und Versionen im Blick behalten.']};
+const pages={overview:['Übersicht',''],camera:['Kamera',''],settings:['Einstellungen',''],maintenance:['Wartung','']};
 function page(){const name=location.hash.slice(1);return pages[name]?name:'overview'}
-function navigate(){const active=page();for(const e of document.querySelectorAll('.page'))e.hidden=e.id!==active;for(const a of document.querySelectorAll('nav a')){a.classList.toggle('active',a.dataset.page===active);if(a.dataset.page===active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}$('#page-title').textContent=pages[active][0];$('#page-description').textContent=pages[active][1]}
+function navigate(){const active=page();for(const e of document.querySelectorAll('.page'))e.hidden=e.id!==active;for(const a of document.querySelectorAll('nav a')){a.classList.toggle('active',a.dataset.page===active);if(a.dataset.page===active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}$('#page-title').textContent=pages[active][0];$('#page-description').textContent=pages[active][1];$('#page-description').hidden=!pages[active][1]}
 window.addEventListener('hashchange',()=>{navigate();window.scrollTo(0,0)});navigate();
 function notify(message){$('#notice').textContent=message;$('#notice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('#notice').hidden=true,6500)}
-function loggedOut(){token='';sessionStorage.removeItem('oma-token');$('#login').hidden=false;$('#content').hidden=true;$('#logout').hidden=true;$('#mode').textContent='Anmeldung erforderlich';latest=null;clearSnapshot();$('#protect-key').value='';$('#protect-password').value='';$('#protect-user').value='';$('#camera-picker').hidden=true;$('#connect-form').hidden=false;candidatePin='';$('#cert-box').hidden=true;$('#trust-cert').checked=false}
+function loggedOut(){document.body.classList.remove('signed-in');clearOverviewPreview();overviewCameraKey='';token='';sessionStorage.removeItem('oma-token');$('#login').hidden=false;$('#content').hidden=true;$('#logout').hidden=true;$('#mode').textContent='Anmeldung erforderlich';latest=null;clearSnapshot();$('#protect-key').value='';$('#protect-password').value='';$('#protect-user').value='';$('#camera-picker').hidden=true;$('#connect-form').hidden=false;candidatePin='';$('#cert-box').hidden=true;$('#trust-cert').checked=false}
 async function api(path,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),25000);let r;try{r=await fetch('/api/'+path,{signal:controller.signal,method:body?'POST':'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:body?JSON.stringify(body):undefined})}catch{throw Error('Dashboard nicht erreichbar oder Zeitüberschreitung. Verbindung prüfen.')}finally{clearTimeout(timer)}const type=r.headers.get('Content-Type')||'';if(r.ok&&type.startsWith('image/'))return r.blob();const data=await r.json();if(!r.ok){if(data.reauth)loggedOut();const e=Error(data.error||'Anfrage fehlgeschlagen.');e.data=data;throw e}return data}
-async function busy(button,fn){const original=button.textContent;button.disabled=true;button.textContent='Einen Moment …';try{await fn()}catch(e){notify(e.message)}finally{button.disabled=false;button.textContent=original}}
-function render(d,fill){latest=d;renderMaintenance(d.maintenance);renderCEC(d);renderTelemetry(d.telemetry);$('#login').hidden=true;$('#content').hidden=false;$('#logout').hidden=false;$('#mode').textContent=d.home_test?'● Heimtest':d.demo?'● Demomodus':'● Pi-Betrieb';$('#test-banner-title').textContent=d.home_test?'Dein NVR. In Ruhe zu Hause testen.':'Du siehst die Vorschau.';$('#test-banner-copy').textContent=d.home_test?'Der NVR-Zugang und echte Standbilder werden geprüft. TV und GPIO bleiben in diesem Modus simuliert.':'Du kannst die Bedienung ausprobieren. Mit Fernseher und Taster ist sie noch nicht verbunden.';$('#demo-banner').hidden=!d.demo;$('#demo-cameras').hidden=!d.demo||d.home_test;$('#test-protect').disabled=!d.protect.configured||d.config.camera_source!=='protect';$('#tv-state').textContent=d.state.tv;$('#tv-summary').textContent=!d.demo&&!d.agent_available?'Unbekannt':d.state.active?'Kameraansicht aktiv':'Kameraansicht aus';$('#tv-detail').textContent=d.demo?'Simuliert · kein TV verbunden':!d.agent_available?'Pi-Dienst nicht erreichbar':d.state.active?(d.state.player_health?.progress_fresh?'Wiedergabezeit wird aktualisiert':d.state.player_health?.state==='stalled'?'Wiedergabe stockt · neuer Versuch folgt':'Wiedergabefortschritt wird geprüft'):'CEC-Befehle · TV-Zustand nicht ausgelesen';$('#camera-label').textContent=d.config.camera_name;$('#screen-camera').textContent=d.config.camera_name;const configured=d.config.has_stream||d.config.camera_source==='demo';$('#camera-summary').textContent=configured?d.config.camera_name:'Noch nicht eingerichtet';$('#camera-detail').textContent=d.config.camera_source==='protect'?'UniFi Protect · '+({high:'Hohe',medium:'Mittlere',low:'Niedrige'}[d.config.quality]||'')+' Qualität':d.config.camera_source==='demo'?'Beispielkamera · kein echtes Kamerabild':d.config.has_stream?'Manuell verbundener Videostream':'In wenigen Schritten verbinden.';$('#setup-callout').hidden=configured;$('#timeout-label').textContent=d.config.auto_off_minutes?d.config.auto_off_minutes+' Minuten':'Deaktiviert';const remaining=d.state.remaining_seconds;$('#countdown').textContent=d.state.active&&remaining?'Noch etwa '+Math.ceil(remaining/60)+' Min. bis Standby.':'Nach der eingestellten Zeit in Standby.';$('#diagnostic').textContent=d.state.message||'';$('#version').textContent=d.version;$('#agent-status').textContent=d.demo?'Demomodus':d.agent_available?'Erreichbar':'Nicht erreichbar';$('#integration-status').textContent=d.protect.configured?'Eingerichtet':'Nicht eingerichtet';$('#integration-host').textContent=d.protect.host||'Lokale Protect-Verbindung';$('#protect-status').textContent=d.protect.configured?'Zugang gespeichert':'Nicht eingerichtet';for(const b of document.querySelectorAll('[data-action="on"]'))b.disabled=!d.demo&&(!d.agent_available||!d.config.has_stream);if(fill){for(const [k,v]of Object.entries(d.config)){const e=$('#settings-form').elements[k];if(e){if(e.tagName==='SELECT'&&!Array.from(e.options).some(o=>o.value===String(v)))e.add(new Option(v+' Minuten',v));e.value=v}}$('#manual-form').elements.camera_name.value=d.config.camera_name;$('#manual-form').elements.stream_url.placeholder=d.config.has_stream?'Gespeichert · neue Adresse zum Ersetzen':'rtsps://…';$('#protect-host').value=d.protect.host;$('#protect-auth').value=d.protect.auth_mode||'local';$('#protect-user').value=d.protect.username||'';updateAuthFields();updateAuthFields()}}
+async function busy(button,fn){button.disabled=true;button.setAttribute('aria-busy','true');try{await fn()}catch(e){notify(e.message)}finally{button.disabled=false;button.removeAttribute('aria-busy')}}
+function render(d,fill){
+  latest=d;
+  document.body.classList.add('signed-in');
+  renderMaintenance(d.maintenance);
+  renderCEC(d);
+  renderTelemetry(d.telemetry);
+  $('#login').hidden=true;$('#content').hidden=false;$('#logout').hidden=false;
+  $('#mode').textContent=d.home_test?'Lokaler Test':d.demo?'Demo':'Raspberry Pi';
+  $('#test-banner-title').textContent=d.home_test?'Lokaler Test':'Demo';
+  $('#test-banner-copy').textContent=d.home_test?'NVR und Standbilder sind echt. TV und Taster werden simuliert.':'Beispieldaten. TV und Taster werden simuliert.';
+  $('#demo-banner').hidden=!d.demo;
+  $('#demo-cameras').hidden=!d.demo||d.home_test;
+  $('#test-protect').disabled=!d.protect.configured||d.config.camera_source!=='protect';
+  const configured=d.config.has_stream||d.config.camera_source==='demo';
+  const quality={high:'Hoch',medium:'Mittel',low:'Niedrig'}[d.config.quality]||'';
+  $('#camera-label').textContent=configured?d.config.camera_name:'Keine Kamera';
+  $('#camera-detail').textContent=d.config.camera_source==='protect'?'UniFi Protect · '+quality:d.config.camera_source==='demo'?'Beispielkamera':d.config.has_stream?'Manueller Stream':'Nicht eingerichtet';
+  $('#tv-summary').textContent=!d.demo&&!d.agent_available?'Nicht erreichbar':d.state.active?'Kameraansicht aktiv':'Kameraansicht aus';
+  $('#tv-detail').textContent=d.demo?'Im Test simuliert.':!d.agent_available?'Pi-Dienst prüfen.':d.state.active?(d.state.player_health?.progress_fresh?'Videofortschritt erkannt.':d.state.player_health?.state==='stalled'?'Wiedergabe stockt. Neuer Versuch folgt.':'Wiedergabe wird geprüft.'):'TV-Zustand wird nicht ausgelesen.';
+  $('#timeout-label').textContent=d.config.auto_off_minutes?d.config.auto_off_minutes+' Minuten':'Deaktiviert';
+  $('#countdown').textContent=d.state.active&&d.state.remaining_seconds?'Noch ca. '+Math.ceil(d.state.remaining_seconds/60)+' Min.':d.config.auto_off_minutes?'Ab Start der Kameraansicht.':'';
+  $('#diagnostic').textContent=d.state.message||'Keine weiteren Angaben.';
+  $('#version').textContent=d.version;
+  $('#agent-status').textContent=d.demo?'Simuliert':d.agent_available?'Erreichbar':'Nicht erreichbar';
+  $('#integration-status').textContent=d.protect.configured?'Verbunden':'Nicht eingerichtet';
+  $('#integration-host').textContent=d.protect.host||'';
+  $('#protect-status').textContent=d.protect.configured?'Zugang gespeichert':'Nicht eingerichtet';
+  for(const button of document.querySelectorAll('[data-action="on"]'))button.disabled=!d.demo&&(!d.agent_available||!d.config.has_stream);
+  renderPreview(d);
+  if(fill){
+    for(const [key,value] of Object.entries(d.config)){
+      const field=$('#settings-form').elements[key];
+      if(!field)continue;
+      if(field.tagName==='SELECT'&&!Array.from(field.options).some(option=>option.value===String(value)))field.add(new Option('Nach '+value+' Minuten',value));
+      field.value=value;
+    }
+    $('#manual-form').elements.camera_name.value=d.config.camera_name;
+    $('#manual-form').elements.stream_url.placeholder=d.config.has_stream?'Gespeichert · zum Ändern neu eingeben':'rtsps://…';
+    $('#protect-host').value=d.protect.host;
+    $('#protect-auth').value=d.protect.auth_mode||'local';
+    $('#protect-user').value=d.protect.username||'';
+    updateAuthFields();
+  }
+}
+function clearOverviewPreview(){
+  overviewRequest++;
+  if(overviewSnapshotUrl)URL.revokeObjectURL(overviewSnapshotUrl);
+  overviewSnapshotUrl='';
+  $('#overview-snapshot').hidden=true;$('#overview-snapshot').removeAttribute('src');
+  $('#preview-empty').hidden=false;$('#preview-time').textContent='Kein Standbild';
+  $('#preview-button-label').textContent='Standbild laden';
+}
+function renderPreview(d){
+  const key=[d.config.camera_source,d.config.camera_id,d.protect.host].join('|');
+  if(key!==overviewCameraKey){clearOverviewPreview();overviewCameraKey=key}
+  const ready=d.config.camera_source==='protect'&&d.protect.configured&&!!d.config.camera_id;
+  $('#refresh-preview').disabled=!ready||previewBusy;
+  $('#setup-callout').hidden=d.config.has_stream||d.config.camera_source==='demo';
+  $('#screen-camera').textContent=ready?'Noch kein Standbild':d.config.camera_source==='demo'?'Beispielkamera':d.config.has_stream?'Manueller Stream':'Keine Kamera verbunden';
+  $('#preview-note').textContent=ready?'Standbild bei Bedarf laden.':d.config.camera_source==='demo'?'Kein echtes Kamerabild.':d.config.has_stream?'Das Livebild wird auf dem Fernseher wiedergegeben.':'Verbinde eine Kamera, um sie hier anzuzeigen.';
+}
+$('#refresh-preview').onclick=async()=>{
+  if(previewBusy||$('#refresh-preview').disabled)return;
+  const requestId=++overviewRequest;
+  const key=overviewCameraKey;
+  previewBusy=true;$('#refresh-preview').disabled=true;$('#refresh-preview').setAttribute('aria-busy','true');
+  let candidate='';
+  try{
+    const blob=await api('protect/preview',{});
+    if(requestId!==overviewRequest||!latest)return;
+    candidate=URL.createObjectURL(blob);
+    const decoded=new Image();decoded.src=candidate;await decoded.decode();
+    if(requestId!==overviewRequest||key!==overviewCameraKey||!latest)return;
+    if(overviewSnapshotUrl)URL.revokeObjectURL(overviewSnapshotUrl);
+    overviewSnapshotUrl=candidate;candidate='';
+    $('#overview-snapshot').src=overviewSnapshotUrl;$('#overview-snapshot').alt='Standbild: '+latest.config.camera_name;
+    $('#overview-snapshot').hidden=false;$('#preview-empty').hidden=true;
+    $('#preview-time').textContent='Standbild · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    $('#preview-button-label').textContent='Aktualisieren';
+  }catch(error){if(requestId===overviewRequest)notify(error.name==='EncodingError'?'Standbild konnte nicht angezeigt werden.':error.message)}
+  finally{if(candidate)URL.revokeObjectURL(candidate);previewBusy=false;$('#refresh-preview').removeAttribute('aria-busy');if(latest)renderPreview(latest)}
+};
 async function load(fill=false){const d=await api('status');render(d,fill)}
 $('#login-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{const d=await api('login',{password:$('#password').value});token=d.token;sessionStorage.setItem('oma-token',token);$('#password').value='';$('#notice').hidden=true;await load(true)})};
 $('#logout').onclick=()=>busy($('#logout'),async()=>{await api('logout',{});loggedOut()});
 $('#settings-form').addEventListener('input',()=>$('#save-state').textContent='Ungespeicherte Änderungen');
-$('#settings-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{notify((await api('config',Object.fromEntries(new FormData(e.target)))).message);$('#save-state').textContent='Alle Einstellungen gespeichert.';await load(true)})};
+$('#settings-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{notify((await api('config',Object.fromEntries(new FormData(e.target)))).message);$('#save-state').textContent='Gespeichert.';await load(true)})};
 $('#manual-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{notify((await api('config',Object.fromEntries(new FormData(e.target)))).message);e.target.elements.stream_url.value='';await load(true);location.hash='overview'})};
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>busy(b,async()=>{notify((await api('action',{action:b.dataset.action})).message);await load()}));
-async function checkUpdates(){if($('#check-update').disabled)return;lastReleaseCheck=Date.now();return busy($('#check-update'),async()=>{try{const d=await api('update');updateRelease=d;updateSupport=d.maintenance;$('#update-result').textContent=d.available?'Installiert: '+d.current+' · Verfügbar: '+d.version+'.':'Du nutzt die aktuelle veröffentlichte Version '+d.current+'.';$('#update-release-notes').textContent=d.notes||'Keine zusätzlichen Versionshinweise.';$('#update-release').hidden=false;renderMaintenance(updateSupport)}catch(error){$('#update-result').textContent=error.message;throw error}})}
+async function checkUpdates(){if($('#check-update').disabled)return;lastReleaseCheck=Date.now();return busy($('#check-update'),async()=>{try{const d=await api('update');updateRelease=d;updateSupport=d.maintenance;$('#update-result').textContent='Installiert: '+d.current+' · '+(d.available&&!latest?.demo?'Verfügbar: ':'GitHub: ')+d.version;$('#update-release-notes').textContent=d.notes||'Keine zusätzlichen Versionshinweise.';$('#update-release').hidden=false;renderMaintenance(updateSupport)}catch(error){$('#update-result').textContent=error.message;throw error}})}
 $('#check-update').onclick=checkUpdates;
 function clearSnapshot(){if(snapshotUrl)URL.revokeObjectURL(snapshotUrl);snapshotUrl='';$('#snapshot').hidden=true;$('#snapshot').removeAttribute('src')}
 function resetRepair(){$('#stream-repair').hidden=true;$('#enable-stream').checked=false;$('#selection-message').textContent='';$('#done-link').hidden=true}
@@ -32,36 +114,47 @@ queueMicrotask(()=>{if(token)load(true).catch(e=>notify(e.message))});
 setInterval(async()=>{if(!token||polling||document.hidden)return;polling=true;try{await load()}catch(e){$('#diagnostic').textContent=e.message;renderTelemetry({...latest?.telemetry,camera_fresh:false,events_fresh:false,last_error:'Dashboard-Verbindung unterbrochen. Werte sind nicht aktuell.'})}finally{polling=false}},5000);
 
 $('#open-tv').onclick=()=>busy($('#open-tv'),async()=>{const d=await api('tv/pair',{});location.href='/tv#access='+encodeURIComponent(d.token)});
-$('#reset-tv').onclick=()=>busy($('#reset-tv'),async()=>notify((await api('tv/revoke',{})).message));
+$('#reset-tv').onclick=()=>{if(confirm('TV-Zugang zurücksetzen? Verbundene TV-Ansichten werden abgemeldet.'))busy($('#reset-tv'),async()=>notify((await api('tv/revoke',{})).message))};
 
-function renderTelemetry(data){const v=TelemetryView.view(data);$('#health-camera').textContent=v.camera;$('#event-connection').textContent=v.connection;$('#health-motion').textContent=v.motion;$('#health-note').textContent=v.warning;for(const [field,id]of [['last_motion','last-motion'],['last_person','last-person'],['last_vehicle','last-vehicle']]){$('#'+id).textContent=v.records[field].label;$('#'+id+'-detail').textContent=v.records[field].detail}}
+function renderTelemetry(data){
+  const view=TelemetryView.view(data);
+  $('#health-camera').textContent=view.camera;$('#event-connection').textContent=view.connection;
+  $('#health-motion').textContent=data?.enabled?view.motion:'Keine Statusdaten';
+  $('#health-note').textContent=view.warning;
+  $('#health-warning').hidden=!(data?.enabled&&(data.last_error||!data.camera_fresh||!data.events_fresh));
+  $('#health-warning').textContent=view.warning;
+  for(const [field,id] of [['last_motion','last-motion'],['last_person','last-person'],['last_vehicle','last-vehicle']]){
+    $('#'+id).textContent=view.records[field].label;
+    $('#'+id+'-detail').textContent=Number.isFinite(Date.parse(data?.[field]?.occurred_at))?view.records[field].detail:'';
+  }
+}
 
 function renderCEC(d){
   const c=d.state.cec;
-  $('#cec-status').textContent=d.demo?'Vorschau · kein CEC-Adapter verbunden.':!d.agent_available?'Pi-Dienst nicht erreichbar.':c?.message||'CEC-Empfang noch nicht verfügbar.';
+  $('#cec-status').textContent=d.demo?'Im Test simuliert.':!d.agent_available?'Pi-Dienst nicht erreichbar.':c?.message||'CEC-Empfang noch nicht verfügbar.';
   const last=c?.last_key;const at=last?.at?new Date(last.at):null;
-  $('#cec-key').textContent=last?'Letzte Taste: '+last.key+' ('+last.code+')'+(at&&!Number.isNaN(at.getTime())?' · '+at.toLocaleString('de-DE',{timeZone:'Europe/Berlin'}):'')+(last.supported?'':' · ohne Aktion'):'Noch keine Taste empfangen. Am TV Pfeile, OK und Zurück drücken.';
-  $('#cec-receiver').textContent=c?.receiver_active?'Lokale TV-Ansicht empfängt Tasten.':'Lokaler TV-Empfänger nicht verbunden. Auf dem Pi die TV-Anwendung starten.';
+  $('#cec-key').textContent=last?'Letzte Taste: '+last.key+' ('+last.code+')'+(at&&!Number.isNaN(at.getTime())?' · '+at.toLocaleString('de-DE',{timeZone:'Europe/Berlin'}):'')+(last.supported?'':' · ohne Aktion'):'Noch keine Taste empfangen.';
+  $('#cec-receiver').textContent=c?.receiver_active?'TV-Ansicht empfängt Tasten.':'TV-Empfänger nicht verbunden.';
 }
 
 function sameConsole(){try{const host=$('#protect-host').value.trim();return new URL(host.includes('://')?host:'https://'+host).origin===latest?.protect.host}catch{return false}}
 function updateAuthFields(){
   const local=$('#protect-auth').value==='local';
   $('#local-login-fields').hidden=!local;$('#local-login-note').hidden=!local;
-  $('#key-options-title').textContent=local?'Zusätzlicher API-Schlüssel für Streams und Ereignisse':'Mit Protect-API-Schlüssel anmelden';
+  $('#key-options-title').textContent=local?'API-Schlüssel (optional)':'API-Schlüssel';
   if(!local)$('#protect-key-options').open=true;
   const saved=latest?.protect;const same=sameConsole()&&saved?.auth_mode===$('#protect-auth').value&&(!local||$('#protect-user').value.trim()===saved.username);
   $('#protect-user').required=local;
   $('#protect-password').required=local&&!(same&&saved?.has_password&&$('#protect-user').value.trim()===saved.username);
   $('#protect-key').required=!local&&!(same&&saved?.has_api_key);
-  $('#password-hint').textContent=same&&saved?.has_password?'Passwort gespeichert. Leer lassen, um es erneut zu verwenden.':'Das Passwort bleibt nur im lokalen Kamerablick-Datenverzeichnis.';
-  $('#key-hint').textContent=same&&saved?.has_api_key?'API-Schlüssel gespeichert. Leer lassen, um ihn erneut zu verwenden.':local?'Optional für den lokalen Login. Für neue Stream-Schnittstellen und laufende Ereignisse benötigt.':'Dein Protect-API-Schlüssel. Bleibt lokal und wird nicht an GitHub gesendet.';
-  $('#connect-button').textContent=local?'Am NVR anmelden →':'Protect verbinden →';
+  $('#password-hint').textContent=same&&saved?.has_password?'Gespeichert. Leer lassen, um es beizubehalten.':'';
+  $('#key-hint').textContent=same&&saved?.has_api_key?'Gespeichert. Leer lassen, um ihn beizubehalten.':local?'Für Streams und Ereignisse je nach Protect-Version.':'In Protect unter Integrationen erstellen.';
+  $('#connect-button').textContent='Verbinden';
 }
 $('#protect-auth').onchange=()=>{$('#protect-key').value='';$('#protect-password').value='';updateAuthFields()};
 $('#protect-user').addEventListener('input',updateAuthFields);
 $('#open-manual').onclick=()=>{const manual=$('#manual-camera');manual.open=true;manual.scrollIntoView({behavior:'smooth',block:'center'});$('#manual-form').elements.camera_name.focus()};
-$('#test-protect').onclick=()=>busy($('#test-protect'),async()=>{const result=$('#protect-test-result');result.textContent='NVR, Kamera und Standbild werden geprüft …';try{const d=await api('protect/test',{});result.textContent=d.camera_name+' · '+d.camera_count+' Kamera(s) · '+d.elapsed_ms+' ms. '+d.message}catch(error){result.textContent=error.message;throw error}});
+$('#test-protect').onclick=()=>busy($('#test-protect'),async()=>{const result=$('#protect-test-result');result.textContent='Verbindung wird geprüft …';try{const d=await api('protect/test',{});result.textContent=d.camera_name+' · '+d.camera_count+' Kamera(s) · '+d.elapsed_ms+' ms · Standbild und Streamadresse geprüft.'}catch(error){result.textContent=error.message;throw error}});
 updateAuthFields();
 
 let updateRelease=null,updateSupport=null,updateWatching=false,completedUpdateJob='',lastReleaseCheck=0,lastRenderedAppVersion='';
@@ -72,10 +165,10 @@ function renderMaintenance(support){
   updateSupport=support||updateSupport;
   if(!updateSupport)return;
   const job=updateSupport.job;
-  $('#maintenance-support').textContent=updateSupport.message||'';
+  $('#maintenance-support').textContent=latest?.home_test?'Updates werden auf dem Raspberry Pi installiert.':updateSupport.message||'';
   renderLastUpdate(job);
   $('#update-setup-help').hidden=!!(updateSupport.available&&updateSupport.persistent)||!!latest?.demo;
-  $('#install-update').hidden=!updateRelease?.available;
+  $('#install-update').hidden=!updateRelease?.available||!!latest?.demo;
   $('#install-update').disabled=!(updateRelease?.available&&updateSupport.available&&updateSupport.persistent&&!job?.busy);
   if(job)renderUpdateJob(job);
   if(token&&page()==='maintenance'&&Date.now()-lastReleaseCheck>300000)queueMicrotask(checkUpdates);
@@ -83,10 +176,10 @@ function renderMaintenance(support){
 function renderUpdateJob(job){
   renderLastUpdate(job);
   $('#update-job').hidden=false;
-  $('#update-job-title').textContent=job.phase==='complete'?'Neue Version ist bereit.':job.phase==='rolled_back'?'Vorherige Version wieder aktiv.':job.phase==='failed'||job.phase==='recovery_failed'?'Aktualisierung benötigt Aufmerksamkeit.':'Kamerablick wird aktualisiert.';
+  $('#update-job-title').textContent=job.phase==='complete'?'Update abgeschlossen.':job.phase==='rolled_back'?'Vorherige Version wieder aktiv.':job.phase==='failed'||job.phase==='recovery_failed'?'Update benötigt Aufmerksamkeit.':'Update läuft.';
   $('#update-job-message').textContent=job.message;
   $('#update-progress-bar').hidden=!job.busy;
-  $('#update-job-note').textContent=job.busy?'Du kannst den Browser schließen. Der Auftrag läuft auf dem Pi weiter.':'Bei einem Neustart bitte erneut am Dashboard anmelden. Kamera, Taster und TV anschließend prüfen.';
+  $('#update-job-note').textContent=job.busy?'Der Auftrag läuft auf dem Pi weiter.':'Bei Bedarf erneut anmelden. Kamera und TV am Gerät prüfen.';
   if(!job.busy&&(updateWatch||completedUpdateJob!==job.id)){completedUpdateJob=job.id;sessionStorage.removeItem('kamerablick-update-watch');updateWatch=null;updateRelease=null;$('#install-update').hidden=true}
 }
 function renderLastUpdate(job){
