@@ -1,6 +1,6 @@
 # Kamerablick installieren
 
-Aktueller Stand: Raspberry Pi 4B mit WLAN als Zielgerät benannt; Einrichtung und Zugriff stehen noch aus. Die Protect-Zentrale wurde als „Instant“ benannt, vorläufig als UNVR Instant eingeordnet. TV-Modell, Speicherausstattung des Pi und genaue Protect-Version sind noch offen. Diese Anleitung beschreibt den vorbereiteten Weg, keine bereits abgeschlossene Geräteinstallation.
+Zielgerät ist ein Raspberry Pi 4B mit WLAN und Desktop. Eine bestehende Pi-Installation wurde gemeldet; ihr aktueller Dienststand und die Gerätefunktionen sind noch nicht abgenommen. Die Protect-Zentrale wurde als „Instant“ benannt. TV-Modell und genaue Protect-Version sind noch offen.
 
 ## 1. Raspberry Pi vorbereiten
 
@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.7
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.8
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -72,7 +72,7 @@ Anschließend `http://127.0.0.1:8099` öffnen. Es ist keine öffentliche Portfre
 
 Unter „Kamera“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Streamadresse verwenden“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
 
-VPN und SSH sind getrennte Systemkomponenten und noch nicht eingerichtet. Es wird keine öffentliche Portfreigabe für das Dashboard oder Protect benötigt. Die SSH-Weiterleitung und der tatsächliche Fernzugriff werden später von einem anderen Netzwerk aus getestet.
+VPN und SSH sind getrennte Systemkomponenten. Den privaten Zugang nach [Fernzugriff](FERNZUGRIFF.md) einrichten und aus einem fremden Netzwerk prüfen. Es wird keine öffentliche Portfreigabe für das Dashboard oder Protect benötigt.
 
 ## 4. Taster und TV abnehmen
 
@@ -83,6 +83,18 @@ TV-CEC im Fernseher aktivieren. Im Dashboard zuerst Kamera und TV-Befehle prüfe
 Die TV-Ansicht ist mit Tastatur nutzbar. CEC-Empfang für Pfeile, OK und Zurück ist implementiert; ob die TV-Fernbedienung diese Tasten weitergibt, muss am Fernseher geprüft werden. Unter „Wartung → Fernbedienung“ stehen Adapterzustand, letzte empfangene Taste und Verbindung zur lokalen TV-Ansicht. Vorgehen und Grenzen: [Fernbedienung](FERNBEDIENUNG.md).
 
 ## Dienste und Diagnose
+
+Als bisheriger Installationsbenutzer im Projektordner:
+
+```sh
+python3 pi/doctor.py
+```
+
+Die Diagnose liest Containerzustand, Dienststatus und Ladepfade, vergleicht die lokalen Pi-Schlüssel und prüft Dashboard, Pi-Dienst und Wartungsdienst. Sie gibt keine Passwörter, Stream-Adressen oder Schlüssel aus und schaltet den TV nicht. Für einen maschinenlesbaren Bericht `python3 pi/doctor.py --json` verwenden. Exitcode 1 bedeutet mindestens einen fehlgeschlagenen Installationstest; Hinweise allein führen nicht zum Fehlercode. Das ist keine Hardwareabnahme.
+
+Bei einer älteren Installation ohne `pi/doctor.py` zuerst den aktuellen Quellstand beziehen. Nach einem Image-Update steht die Diagnose auch unter `.runtime/current/doctor.py` bereit. Der neue Wartungs-Bereitschaftstest benötigt ebenfalls die aktuelle Pi-Laufzeit. Fehlt er bei einer alten Version, heißt das allein noch nicht, dass deren Updatefunktion defekt ist.
+
+Für die gezielte Dienstprüfung:
 
 ```sh
 systemctl --user status oma-tv-session.target oma-tv-agent.service oma-tv-kiosk.service

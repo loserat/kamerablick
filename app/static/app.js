@@ -1,5 +1,5 @@
 let token=sessionStorage.getItem('oma-token')||'', latest=null, selectedCamera='', candidatePin='', candidateHost='', snapshotUrl='', noticeTimer, polling=false;
-let overviewSnapshotUrl='', overviewCameraKey='', overviewRequest=0, previewBusy=false;
+let overviewSnapshotUrl='', overviewCameraKey='', overviewRequest=0, previewBusy=false, protectTestKey='';
 const $=s=>document.querySelector(s);
 const pages={overview:['Übersicht',''],camera:['Kamera',''],settings:['Einstellungen',''],maintenance:['Wartung','']};
 function page(){const name=location.hash.slice(1);return pages[name]?name:'overview'}
@@ -21,7 +21,10 @@ function render(d,fill){
   $('#test-banner-copy').textContent=d.home_test?'NVR und Standbilder sind echt. TV und Taster werden simuliert.':'Beispieldaten. TV und Taster werden simuliert.';
   $('#demo-banner').hidden=!d.demo;
   $('#demo-cameras').hidden=!d.demo||d.home_test;
-  $('#test-protect').disabled=!d.protect.configured||d.config.camera_source!=='protect';
+  const canTest=d.protect.configured&&d.config.camera_source==='protect';
+  $('#test-protect').disabled=!canTest;
+  const testKey=[d.protect.host,d.config.camera_id,canTest].join('|');
+  if(testKey!==protectTestKey){protectTestKey=testKey;$('#protect-test-result').textContent=canTest?'Gespeicherten Zugang und Kamera prüfen.':'Kamera verbinden, um den NVR zu prüfen.'}
   const configured=d.config.has_stream||d.config.camera_source==='demo';
   const quality={high:'Hoch',medium:'Mittel',low:'Niedrig'}[d.config.quality]||'';
   $('#camera-label').textContent=configured?d.config.camera_name:'Keine Kamera';
@@ -33,7 +36,7 @@ function render(d,fill){
   $('#diagnostic').textContent=d.state.message||'Keine weiteren Angaben.';
   $('#version').textContent=d.version;
   $('#agent-status').textContent=d.demo?'Simuliert':d.agent_available?'Erreichbar':'Nicht erreichbar';
-  $('#integration-status').textContent=d.protect.configured?'Verbunden':'Nicht eingerichtet';
+  $('#integration-status').textContent=d.protect.configured?'Eingerichtet':'Nicht eingerichtet';
   $('#integration-host').textContent=d.protect.host||'';
   $('#protect-status').textContent=d.protect.configured?'Zugang gespeichert':'Nicht eingerichtet';
   for(const button of document.querySelectorAll('[data-action="on"]'))button.disabled=!d.demo&&(!d.agent_available||!d.config.has_stream);

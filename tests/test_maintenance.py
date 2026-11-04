@@ -165,6 +165,14 @@ class BrowserMaintenance(unittest.TestCase):
             connection.request('POST' if body is not None else 'GET',path,body=json.dumps(body) if body is not None else None,headers=headers)
             response=connection.getresponse();raw=json.loads(response.read());status=response.status;connection.close();return status,raw
         try:
+            self.assertEqual(request('/healthz')[0],401)
+            with patch.object(self.manager,'reconcile') as reconcile:
+                code,health=request('/healthz',credential=token)
+                self.assertEqual(code,200)
+                self.assertEqual(health['protocol'],1)
+                self.assertTrue(health['available'])
+                self.assertNotIn('job',health)
+                reconcile.assert_not_called()
             self.assertEqual(request('/status')[0],401)
             self.assertEqual(request('/update',{'version':'v1.0.1'})[0],401)
             code,data=request('/update',{'version':'v1.0.1'},token)

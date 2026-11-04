@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg?branch=main" alt="Automatische Prüfungen"></a>
-  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.7-44464f" alt="Aktuelle Version"></a>
+  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.8-44464f" alt="Aktuelle Version"></a>
   <img src="https://img.shields.io/badge/Raspberry_Pi-4B-44464f" alt="Zielgerät Raspberry Pi 4B">
   <img src="https://img.shields.io/badge/Status-fr%C3%BChe_Entwicklung-e4e4e7?labelColor=44464f" alt="Frühe Entwicklung">
 </p>
@@ -36,11 +36,17 @@ Ein Taster am Raspberry Pi schaltet den Fernseher ein und öffnet die eingericht
 
 Große Kacheln für Kamera, kurze Hilfe und Ausschalten mit Bestätigung. Pfeile wählen aus, **OK** öffnet, **Zurück** führt zur Übersicht.
 
+![TV-Ansicht mit sichtbarer Auswahl im Testmodus](docs/assets/tv-ansicht.jpg)
+
 ### Für die Einrichtung
 
 Am lokalen NVR mit UniFi-Benutzer oder API-Schlüssel anmelden, Kamera auswählen, Standbild prüfen und übernehmen. Die Stream-Adresse wird automatisch ermittelt. Danach lassen sich Taster, Abschaltzeit und Kamerastatus zentral einstellen beziehungsweise prüfen.
 
 Die Übersicht zeigt Kamera, TV-Steuerung und letzte Ereignisse. Ein Standbild der gespeicherten Protect-Kamera lässt sich bei Bedarf laden und aktualisieren. Es ist ausdrücklich kein Livebild. Weitere Hinweise stehen in aufklappbaren Bereichen.
+
+![Dashboard mit erzeugtem Testbild](docs/assets/dashboard.jpg)
+
+*Abbildungen aus dem isolierten Test: erzeugtes Standbild, simulierte Ereignisse und TV-Steuerung. Keine echten Kamerabilder oder privaten Zugangsdaten.*
 
 ## Das steckt drin
 
@@ -69,7 +75,7 @@ Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit)
 Zuerst [Betriebssystem, WLAN, Docker und benötigte Programme einrichten](docs/PI4.md). Anschließend als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.7 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.8 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -78,7 +84,7 @@ Fehlende Voraussetzungen zuerst ergänzen. Danach installieren:
 
 ```sh
 sudo loginctl enable-linger "$USER"
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.7
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.8
 ```
 
 Das öffentliche Image benötigt keine GitHub-Anmeldung. Docker wählt automatisch **ARM64**, **ARMv7** oder **AMD64** passend zum installierten System. Die Pi-Laufzeit wird aus derselben Image-Version übernommen.
@@ -115,6 +121,7 @@ Das Dashboard läuft ohne privilegierten Gerätezugriff und ohne Docker-Socket. 
 | Installieren oder Kamera verbinden | [Installation](docs/INSTALLATION.md) |
 | Eine vorhandene Installation umstellen oder per Browser aktualisieren | [Browser-Updates](docs/BROWSER-UPDATES.md) |
 | Eine TV-Fernbedienung prüfen | [Fernbedienung und Tastenempfang](docs/FERNBEDIENUNG.md) |
+| Privaten Zugriff von unterwegs einrichten | [VPN und Fernzugriff prüfen](docs/FERNZUGRIFF.md) |
 | Kamerastatus und letzte Bewegung verstehen | [Telemetrie und Ereignisse](docs/TELEMETRIE.md) |
 | Den tatsächlichen Prüfstand sehen | [Geräteabnahme und offene Punkte](docs/ABNAHME.md) |
 | Lokal ausprobieren oder Tests ausführen | [Entwicklung](docs/ENTWICKLUNG.md) |

@@ -11,6 +11,8 @@ Der Pi 4B ist das aktuelle Zielgerät. Er hat WLAN für 2,4 und 5 GHz eingebaut 
 
 Für die lokale Kamera muss der Pi die Protect-Zentrale im Heimnetz erreichen. Ein isoliertes Gast-WLAN verhindert das häufig. Bei schwachem Empfang den Standort prüfen und 2,4 beziehungsweise 5 GHz am tatsächlichen Aufstellort vergleichen.
 
+Damit die TV-Ansicht nach dem Einschalten ohne Passwort startet, am Pi im Control Centre unter System den Start zum Desktop und Desktop-Autologin für den vorgesehenen Benutzer aktivieren. Bei älteren Raspberry-Pi-OS-Versionen heißt das Werkzeug Raspberry Pi Configuration; alternativ `sudo raspi-config` verwenden. Die Bildschirmabschaltung für die TV-Sitzung prüfen. Der Installer ersetzt diese Systemeinstellungen nicht. [Offizielle Konfiguration](https://www.raspberrypi.com/documentation/computers/configuration.html#require-a-password-from-startup)
+
 ## 2. Docker und Programme installieren
 
 Zuerst System und Architektur prüfen:
@@ -39,7 +41,7 @@ docker compose version
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.7 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.8 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 sudo loginctl enable-linger "$USER"
 python3 pi/install.py --check
@@ -48,7 +50,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen aus der Prüfung zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.7
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.8
 ```
 
 Das öffentliche Image enthält bereits **ARM64**; Docker wählt diese Variante automatisch. Für den Wechsel vom Pi 2B zum Pi 4B ist kein neues Anwendungsimage nötig. Der Pi muss den Container nicht selbst bauen.
@@ -63,10 +65,10 @@ Vorhandene Installationen behalten ihre bisherige Bindung. Die Umstellung auf di
 
 Protect-Adresse und lokalen UniFi-Benutzer oder API-Schlüssel im Einrichtungsdialog hinterlegen, Kamera auswählen und Standbild sowie Livebild prüfen. Der lokale Login unterstützt zusätzlich einen API-Schlüssel für moderne Streams und laufende Ereignisse. Details und der getrennte Heimtest stehen in [HEIMTEST.md](HEIMTEST.md). Zunächst einen H.264-Stream mit niedriger oder mittlerer Qualität testen und die Qualität am Gerät erhöhen. Flüssige Wiedergabe und Grafikbeschleunigung sind noch nicht am echten Pi 4B verifiziert.
 
-Der Zugriff von außerhalb benötigt zusätzlich einen privaten VPN-Zugang. WLAN und aktiviertes SSH allein stellen diesen Fernzugriff noch nicht bereit. Weitere Schritte, Updates und Tasteranschluss: [Installation](INSTALLATION.md), [Geräteabnahme](ABNAHME.md).
+Der Zugriff von außerhalb benötigt zusätzlich einen privaten VPN-Zugang. WLAN und aktiviertes SSH allein stellen diesen Fernzugriff noch nicht bereit. Einrichtung und Abnahme: [Fernzugriff](FERNZUGRIFF.md). Weitere Schritte, Updates und Tasteranschluss: [Installation](INSTALLATION.md), [Geräteabnahme](ABNAHME.md).
 
 App-Updates erfolgen nach der einmaligen Einrichtung unter **Wartung** in der Oberfläche. Für bereits installierte Versionen gilt [Browser-Updates aktivieren](BROWSER-UPDATES.md).
 
 ## Prüfstand
 
-Version v0.1.7 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen liegen vor; ARMv7 wurde in früheren Versionen zusätzlich unter Emulation geprüft. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.
+Version v0.1.8 ist öffentlich mit ARMv7-, ARM64- und AMD64-Varianten veröffentlicht. Lokale ARM64-Containerprüfungen liegen vor; ARMv7 wurde in früheren Versionen zusätzlich unter Emulation geprüft. Die tatsächliche Pi-4-Installation, WLAN-Wiederverbindung, HDMI-Ausgabe, GPIO, CEC-Fernbedienung und Updates auf dem Gerät bleiben offen.

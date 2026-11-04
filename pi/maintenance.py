@@ -105,16 +105,20 @@ class Maintenance:
         except (OSError, ValueError, KeyError):
             return False
 
-    def status(self):
+    def health(self):
+        """Read readiness without reconciling or scheduling an update."""
         ready = self.managed()
-        if ready:
-            self.reconcile()
         persistent = self.persistent()
         return {'protocol': 1, 'available': ready, 'persistent': persistent, 'instance': self.identity,
             'runtime': self.runtime, 'current_version': read_env(self.root / '.env').get('APP_VERSION', 'dev'),
-            'job': self.store.public(), 'message': ('Bereit für Updates aus der Oberfläche.' if ready and persistent
+            'message': ('Bereit für Updates aus der Oberfläche.' if ready and persistent
                 else 'Einmalig dauerhaften Wartungsdienst freigeben: sudo loginctl enable-linger "$USER"' if ready
                 else 'Verwaltete Pi-Installation fehlt.')}
+
+    def status(self):
+        if self.managed():
+            self.reconcile()
+        return self.health() | {'job': self.store.public()}
 
     def schedule(self, job, recover=False):
         runtime = (self.root / '.runtime/current').resolve()
@@ -227,10 +231,10 @@ def handler(manager, token):
         def do_GET(self):
             if not self.authorized():
                 return self.reply({'error': 'Lokaler Wartungszugang erforderlich.'}, 401)
-            if self.path != '/status':
+            if self.path not in ('/status', '/healthz'):
                 return self.reply({'error': 'Nicht gefunden.'}, 404)
             try:
-                self.reply(manager.status())
+                self.reply(manager.health() if self.path == '/healthz' else manager.status())
             except Exception:
                 self.reply({'error': 'Wartungsstatus nicht lesbar.'}, 503)
 
