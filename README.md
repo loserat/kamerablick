@@ -116,6 +116,9 @@ Das Dashboard läuft ohne privilegierten Gerätezugriff und ohne Docker-Socket. 
 
 | Du möchtest … | Hier geht es weiter |
 | --- | --- |
+| Mehrere Kameras einrichten und am TV auswählen | [Bedienung für Einrichtung und Alltag](docs/BEDIENUNG.md) |
+| Betrieb prüfen und Speicher kontrolliert aufräumen | [Wartung und Sicherungen](docs/WARTUNG.md) |
+| Änderungen einer Version nachlesen | [Änderungsübersicht](CHANGELOG.md) |
 | Den eigenen NVR vorab zu Hause testen | [Heimtest und Anmeldung](docs/HEIMTEST.md) |
 | Den Pi 4B mit WLAN vorbereiten | [Pi-4-Schnellstart](docs/PI4.md) |
 | Installieren oder Kamera verbinden | [Installation](docs/INSTALLATION.md) |

@@ -11,7 +11,7 @@ export DASHBOARD_PASSWORD='eigenes-langes-passwort'
 DEMO_MODE=true .venv/bin/python app/server.py
 ```
 
-`http://127.0.0.1:8088` öffnen und mit dem selbst gewählten Passwort anmelden. Unter „Kamera“ können Beispielkameras gewählt werden. Die Demo steuert keine Hardware und zeigt kein echtes Kamerabild. Für die TV-Ansicht im Dashboard „TV-Ansicht öffnen“ auswählen.
+`http://127.0.0.1:8088` öffnen und mit dem selbst gewählten Passwort anmelden. Unter „Kameras“ können Beispielkameras gewählt werden. Die Demo steuert keine Hardware und zeigt kein echtes Kamerabild. Für die TV-Ansicht im Dashboard „TV-Ansicht öffnen“ auswählen.
 
 ## Automatische Prüfungen
 
