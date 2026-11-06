@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg?branch=main" alt="Projektprüfungen"></a>
-  <a href="https://github.com/loserat/kamerablick/releases/tag/v0.1.13"><img src="https://img.shields.io/badge/Version-v0.1.13-44464f" alt="Version v0.1.13"></a>
+  <a href="https://github.com/loserat/kamerablick/releases/tag/v0.1.14"><img src="https://img.shields.io/badge/Version-v0.1.14-44464f" alt="Version v0.1.14"></a>
   <a href="docs/ABNAHME.md"><img src="https://img.shields.io/badge/Ger%C3%A4tetest-Pi_4B_%2B_Philips-44464f" alt="Gerätetest mit Pi 4B und Philips-TV"></a>
 </p>
 
@@ -26,6 +26,8 @@
 Meine Oma soll nachsehen können, wer vor der Tür steht: eine Kamera mit den Pfeiltasten auswählen, mit **OK** öffnen und mit **Zurück** wieder zur Auswahl wechseln. Große Schrift, eine helle Auswahlmarkierung und wenige Bedienelemente machen die TV-Ansicht übersichtlich. Für das Ausschalten gibt es eine eigene Bestätigung.
 
 Ein separates Dashboard im Browser übernimmt Kameraeinrichtung, Passwort, Abschaltzeit und App-Updates. Optional kann ein GPIO-Taster am Pi die Kamera öffnen und den Fernseher wieder ausschalten.
+
+**Aktuelles Release: v0.1.14.** Es bündelt die überarbeitete Dokumentation und aktualisierte Versionsverweise. Der dokumentierte Gerätetest bezieht sich auf v0.1.13; ein eigener Test von v0.1.14 auf dem Pi steht noch aus.
 
 ## Am echten Gerät geprüft
 
@@ -67,7 +69,7 @@ Voraussetzung ist ein **Raspberry Pi 4B mit Raspberry Pi OS (64 Bit) und Desktop
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.13 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.14 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 sudo loginctl enable-linger "$USER"
 python3 pi/install.py --check
@@ -76,7 +78,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.13
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.14
 ```
 
 Das öffentliche Docker-Image lässt sich ohne GitHub-Anmeldung laden. Docker wählt die passende Prozessorvariante; ein lokaler Image-Bau ist nicht nötig. Dashboard und versionierte Pi-Laufzeit werden gemeinsam eingerichtet.

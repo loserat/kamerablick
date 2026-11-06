@@ -22,7 +22,7 @@ Die Bedienung soll später ohne Anmeldung möglich sein. Desktop-Autologin und B
 Den veröffentlichten Quellstand als normaler Desktop-Benutzer beziehen:
 
 ```sh
-git clone --branch v0.1.13 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.14 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 sudo loginctl enable-linger "$USER"
 ```
@@ -36,7 +36,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.13
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.14
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.

@@ -1,6 +1,6 @@
 # Kamerablick dokumentiert
 
-Diese Anleitungen beschreiben den veröffentlichten Stand **v0.1.13**. Der Aufbau mit Raspberry Pi 4B und Philips 55PUS6581/12 ist für die in der [Geräteprüfung](ABNAHME.md) genannten Funktionen bestätigt. Softwaretests, Prüfungen am Gerät und noch offene Punkte werden dort getrennt geführt.
+Diese Anleitungen beschreiben den veröffentlichten Stand **v0.1.14**. Der dokumentierte Gerätetest stammt von v0.1.13. Für v0.1.14 wurde noch kein neuer Pi-Test durchgeführt. Der Aufbau mit Raspberry Pi 4B und Philips 55PUS6581/12 ist für die in der [Geräteprüfung](ABNAHME.md) genannten Funktionen bestätigt. Softwaretests, Prüfungen am Gerät und noch offene Punkte werden dort getrennt geführt.
 
 ## Einrichten
 

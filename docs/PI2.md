@@ -41,10 +41,10 @@ Der normale Desktop-Benutzer muss Docker ausführen können. Nach einer Änderun
 Repository: [loserat/kamerablick](https://github.com/loserat/kamerablick). Verfügbare Versionen: [GitHub Releases](https://github.com/loserat/kamerablick/releases). Die Installation einer veröffentlichten Version verwendet diese Befehle:
 
 ```sh
-git clone --branch v0.1.13 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.14 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.13
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.14
 ```
 
 Der GitHub-Workflow ist für `linux/arm/v7`, `linux/arm64` und `linux/amd64` vorbereitet. Docker wählt beim Herunterladen die passende Variante. Der Pi baut dabei kein Container-Image selbst.
@@ -67,7 +67,7 @@ Spätere App-Updates erfolgen mit einer konkreten veröffentlichten Version:
 
 ```sh
 cd ~/kamerablick
-./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.13
+./pi/update.sh ghcr.io/loserat/kamerablick:v0.1.14
 ```
 
 Der Updater sichert die Konfiguration und übernimmt Container und Pi-Dienste gemeinsam. Hardware, echtes Kamerabild, CEC und der Fernzugriff von außerhalb des Heimnetzes werden am Pi gesondert geprüft. Der vorbereitete SSH-Tunnel ersetzt noch kein eingerichtetes VPN.

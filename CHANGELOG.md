@@ -1,5 +1,12 @@
 # Änderungen
 
+## v0.1.14
+
+- Die neu geordnete Projektdokumentation mit README, Architektur, Fehlersuche und genauer Philips-Geräteprüfung in einem Release bündeln.
+- Installationsbefehle, Versionsverweise und den Hilfe-Link im Dashboard auf v0.1.14 aktualisieren.
+- Dokumentation automatisch auf lokale Links, Überschriften und konsistente Releaseangaben prüfen.
+- Keine Änderung an Passwortverwaltung, Kamerasteuerung, Pi-Diensten oder Updateablauf. Der bestätigte Gerätetest bleibt v0.1.13 zugeordnet; die Installation von v0.1.14 auf dem Pi erfolgt gesondert durch den Benutzer.
+
 ## v0.1.13
 
 - Dashboard-Passwort direkt unter Einstellungen ändern: bisheriges Passwort, neues Passwort und Wiederholung.
