@@ -4,7 +4,7 @@
 
 - Unter Wartung zeigt „Zuletzt geprüft“ Datum und Uhrzeit der letzten erfolgreichen GitHub-Versionsabfrage in deutscher Zeit.
 - Während einer neuen Prüfung und nach einer fehlgeschlagenen Abfrage wird kein alter Zeitpunkt als aktuelles Ergebnis angezeigt.
-- Diese kleine Änderung dient zusätzlich dem erneuten Test des regulären Updatewegs über das Pi-Dashboard.
+- Auf einem echten Pi 4B wurde v0.1.11 → v0.1.12 direkt über die Wartungsseite installiert und der Abschluss dort geprüft. Nach Neuladen waren die neue Version und Prüfzeit sichtbar. Einstellungen, Passwort und TV-Kopplung blieben erhalten; die Wartungslaufzeit und alle Dienste wurden geprüft.
 
 ## v0.1.11
 

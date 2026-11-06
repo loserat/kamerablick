@@ -28,7 +28,7 @@ Kamerablick entstand für meine Oma: Sie soll sehen können, wer vor der Tür st
 
 Ein Taster am Raspberry Pi schaltet den Fernseher ein und öffnet die eingerichtete Kamera. Der nächste Druck schickt den TV in Standby. Alternativ gibt es eine übersichtliche TV-Ansicht mit großen Schaltflächen, sichtbarem Fokus und Pfeiltasten-/OK-Bedienung. Einrichtung und Wartung erledigst du im separaten Dashboard.
 
-> **Stand:** Automatischer Start, Dashboard-Zugriff und Fernbedienung wurden an einem echten Pi 4B mit Philips-TV geprüft. Das Update v0.1.10 → v0.1.11 wurde über die Wartungsseite am echten Pi erfolgreich durchgeführt; Einstellungen und TV-Kopplung blieben erhalten. Echte Protect-Wiedergabe, GPIO-Taster und privater Fernzugriff müssen am jeweiligen Ziel gesondert geprüft werden. [Prüfstand und Grenzen →](docs/ABNAHME.md)
+> **Stand:** Automatischer Start, Dashboard-Zugriff und Fernbedienung wurden an einem echten Pi 4B mit Philips-TV geprüft. Die Updates v0.1.10 → v0.1.11 und v0.1.11 → v0.1.12 wurden über die Wartungsseite am echten Pi erfolgreich durchgeführt; Einstellungen und TV-Kopplung blieben erhalten. Echte Protect-Wiedergabe, GPIO-Taster und privater Fernzugriff müssen am jeweiligen Ziel gesondert geprüft werden. [Prüfstand und Grenzen →](docs/ABNAHME.md)
 
 ## Zwei Ansichten. Für zwei Aufgaben.
 
