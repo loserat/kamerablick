@@ -1,38 +1,85 @@
-# Geräteprüfung Kamerablick
+# Prüfprotokoll und Gerätekompatibilität
 
-Stand: 06.11.2026. Auf einem echten Pi 4B wurden der automatische Start von Dashboard, Pi-Dienst, TV-Browser und Wartungsdienst sowie die Erreichbarkeit des Dashboards im Heimnetz geprüft. Am Philips 55PUS6581/12 wurden Pfeiltasten tatsächlich per HDMI-CEC empfangen und ein sichtbarer Auswahlwechsel auf dem Pi-Bildschirm geprüft. Der Benutzer hat die Bedienung mit der echten TV-Fernbedienung bestätigt. Das Update von v0.1.10 auf v0.1.11 wurde über die tatsächliche Wartungsseite gestartet und dort als erfolgreich angezeigt. Einstellungen, Passwort und TV-Kopplung blieben erhalten; Container und alle drei Pi-Dienste liefen anschließend. Echte Protect-Wiedergabe, GPIO-Taster, Rückkehr aus dem Player und privater Fernzugriff sind weiterhin gesondert zu prüfen. Private Adressen und Zugangsdaten werden in diesem öffentlichen Dokument nicht gespeichert.
+**Stand: 06.11.2026 · App v0.1.13 · Prüfaufbau: Raspberry Pi 4B und Philips 55PUS6581/12.**
 
-## Nachweise zu den neun Abnahmekriterien
+Der reale Aufbau wurde für automatischen Start, Dashboard-Zugriff, HDMI-CEC-Tastenempfang, App-Updates und Passwortverwaltung erfolgreich geprüft. Die echte Philips-Fernbedienung bewegte die sichtbare Auswahl; der Benutzer bestätigte die funktionierende Bedienung. Der abschließende Installationscheck nach dem Update und der Passwortänderung war vollständig erfolgreich.
 
-| Kriterium | Umgesetzt und Software-Nachweis | Für die Abnahme noch erforderlich |
+Das ist eine Bestätigung der hier aufgeführten Funktionen. Eine vollständige Abnahme aller Kameras, des GPIO-Tasters und des Fernzugriffs ist damit nicht verbunden. Private Adressen, Zugangswerte, Rohprotokolle und echte Kamerabilder bleiben außerhalb dieses Repositories.
+
+## Geprüfter Aufbau
+
+| Bestandteil | Festgestellter Stand |
+| --- | --- |
+| Raspberry Pi | Raspberry Pi 4 Model B Rev 1.2, ARM64 (`aarch64`). |
+| Betrieb | Raspberry Pi OS mit grafischer Desktop-Sitzung und Autostart. |
+| Fernseher | Philips **55PUS6581/12**. |
+| Bedienung | TV-Fernbedienung über HDMI-CEC, EasyLink und EasyLink-Fernbedienung aktiviert. |
+| HDMI | Verbindung zwischen Pi und TV; Auswahl des angeschlossenen CEC-Adapters. Zuletzt war `/dev/cec0` verbunden. |
+| Dashboard | Passwortgeschützt, direkt über die Pi-IP im Heimnetz von einem zweiten Gerät geöffnet. |
+| Installierte App | v0.1.13, offizielles ARM64-Image. |
+| GPIO | Kein physischer Taster angeschlossen; keine GPIO-Geräteabnahme. |
+| Protect | Zugang und Kamerakonfiguration vorhanden; keine vollständige Livebild-/Ereignisabnahme des realen NVR dokumentiert. |
+
+Der TV-Modellnachweis, die empfangenen CEC-Nachrichten und Screenshots des Auswahlwechsels wurden privat festgehalten. Der Test belegt kein allgemeines Funktionieren mit allen Philips-Geräten oder anderen Herstellern. Ein ARC-Anschluss allein bestätigt keinen CEC-Tastenempfang.
+
+## Am Gerät bestätigte Ergebnisse
+
+| Prüfung | Beobachtung | Umfang |
 | --- | --- | --- |
-| 1. GitHub, Docker, automatischer Start | Öffentliche ARM64-/ARMv7-/AMD64-Images, versionierte Pi-Laufzeit, Docker-Neustartregel und Desktop-Startbrücke. Installer-, systemd- und Containerprüfungen. | Start nach regulärem Pi-Neustart am Testgerät geprüft; bei der endgültigen Aufstellung erneut prüfen. |
-| 2. Schlichte Oberfläche über Pi-IP | Neutrale Gestaltung, kurze Beschriftungen, aufklappbare Hilfen und passwortgeschütztes Dashboard. Neue Pi-Installationen binden an das Heimnetz; bestehende Bindung bleibt erhalten. Browserprüfung am Desktop und bei 390 Pixeln Breite. | Dashboard einschließlich Anmeldung und Wartungsseite von einem zweiten Gerät über die Pi-IP geöffnet; endgültiges Oma-Netz gesondert prüfen. |
-| 3. Protect und manuelle Kamera | Lokaler Benutzer oder API-Schlüssel, Zertifikatprüfung, Kameraliste, Standbild, Bildqualität und Stream-Freigabe. TLS-Testkonsole, API- und Browserprüfungen mit Testdaten. | Mit dem echten NVR verbinden; Standbild, Berechtigungen und flüssiges Livebild am TV prüfen. |
-| 4. TV-Ansicht und Fernbedienung | Große Kameraauswahl mit höchstens zwei Kacheln nebeneinander, sichtbare Auswahl, Pfeile/OK/Zurück und Ausschaltbestätigung. Vier Beispielkameras bei HD, Full HD und 4K im Browser geprüft. Browser-Tastaturprüfung sowie Tests für Navigation und CEC-Zustellung. | Echte Pfeiltasten am Philips bestätigt; Kamerawechsel, Tasten halten/loslassen und Rückkehr aus dem echten Player mit der neuen Ansicht zusätzlich prüfen. |
-| 5. GPIO und Abschaltzeit | Tastersteuerung und einstellbare Abschaltung; simulierte Hardwaretests. | Verdrahteten Taster mehrmals betätigen; Einschalten, zweiter Druck Standby und automatische Abschaltung beobachten. |
-| 6. Ausfälle und veraltete Werte | Wiedergabefortschritt, begrenzte Wiederverbindungsversuche und Aktualitätskennzeichnung. Streamlabor mit echtem RTSP/RTSPS und erzeugtem Testvideo für den Stand vor der automatischen HDMI-Portwahl. Die neue Portwahl ist getrennt durch Prozess- und Geräteprüfungen abgesichert. | Tatsächlichen Kamera-/Netzausfall, Rückkehr und sichtbar aktuelles Bild am TV prüfen. |
-| 7. Browser-Updates und Datenerhalt | Bestätigter Updateauftrag, Sicherung, gemeinsame Container-/Pi-Laufzeit und Rückkehr. Isoliertes Docker-Labor prüft Browserbedienung, fehlerhaftes Image, Unterbrechung und datenerhaltende Neuinstallation. | v0.1.10 → v0.1.11 über die echte Wartungsseite erfolgreich durchgeführt und Datenerhalt geprüft. Kamera, Taster und TV-Bedienung nach diesem Update zusätzlich beobachten. |
-| 8. Privater Fernzugriff | Passwortschutz, getrennte TV-Berechtigung und kein Docker-Socket im Dashboard. Konkreter VPN-Einrichtungs- und Prüfweg in [FERNZUGRIFF.md](FERNZUGRIFF.md). | VPN am Pi und Wartungsgerät einrichten und Dashboard/SSH aus einem fremden Netz nach Pi-Neustart testen. |
-| 9. Repository und Dokumentation | Versionierte Installationswege, aktuelle Abbildungen, veröffentlichte Images und reproduzierbare Prüfprogramme. Private Konfiguration und erzeugte Berichte liegen außerhalb des Repositories. | Dokumentation nach dem tatsächlichen Gerätestand gegenprüfen; private Abnahmeergebnisse aufbewahren. |
+| Automatischer Start | Nach regulärem Pi-Neustart liefen Dashboard und verwaltete Dienste wieder an. | Am Prüfgerät vor den späteren Funktionsupdates beobachtet; beim endgültigen Aufstellen erneut prüfen. |
+| Dashboard über Pi-IP | Anmeldung, Einstellungen, Versionsprüfung und Wartung direkt im Browser erreichbar. | Erfolgreich am realen Pi, ohne SSH-Tunnel für den Browseraufruf. |
+| TV-Fernbedienung | Vom TV gerichtete CEC-Tasten kamen am Pi an und bewegten die Auswahl. | Benutzer bestätigte die reale Fernbedienungsfunktion; kein kompletter Test aller Tasten und Playerzustände. |
+| v0.1.10 → v0.1.11 | Update über die Wartungsseite gestartet, bestätigt und erfolgreich abgeschlossen. | Daten erhalten. Verbliebene Markierung einer früher abgebrochenen Einrichtung gesichert und korrigiert. |
+| v0.1.11 → v0.1.12 | Update über die Wartungsseite erfolgreich. Neue Version und Prüfzeit im Browser sichtbar. | Ohne manuelle Dienstreparatur; Kameraeinstellungen, Passwort und TV-Kopplung erhalten. |
+| v0.1.12 → v0.1.13 | Update über die Wartungsseite erfolgreich. Container gesund, drei Dienste aktiv, Wartungslaufzeit aktuell. | Vorher-nachher-Vergleich der privaten Einstellungen erfolgreich. |
+| Passwortänderung | Authentifizierte App-Schnittstelle speicherte den neuen Zugang; altes Passwort und alte Sitzung wurden abgewiesen. | Echte Anmeldung mit dem neuen Passwort im Browser nach Containerneustart bestätigt. Das Formular wurde angezeigt; das Absenden des Formulars durch einen Benutzer wurde nicht gesondert beobachtet. |
+| Abschlussdiagnose | Dashboard, Dienstschlüssel, Dateirechte, Laufzeit, Container und Wartung erfolgreich geprüft. | Alle drei Benutzer-Dienste aktiv, jeweils keine automatischen Fehlerneustarts beim Abschlusscheck. |
 
-Die Prüfprogramme liegen unter [tests/](../tests/). GitHub führt [Projektprüfungen](https://github.com/loserat/kamerablick/actions/workflows/checks.yml) und vor jeder Image-Veröffentlichung erneut Tests aus. Container-/Browserprüfungen bestätigen keine GPIO-, HDMI-, WLAN- oder Gerätefunktion. Systemd und GitHub-Transport im Update-Labor sind Testgegenstellen; die Containerwechsel und Datenwiederherstellung erfolgen tatsächlich.
+Für die Updateaufträge wurde die echte Dashboard-Oberfläche benutzt. SSH diente zusätzlich dem Vergleich der Einstellungen, der Diagnose und der separat angeforderten Passwortumstellung über die App-Schnittstelle. Der reguläre Updateauftrag benötigt keinen SSH-Befehl.
 
-## Geräteprüfung in dieser Reihenfolge
+## Software- und Containerprüfungen
 
-1. Pi einschalten, HDMI zum TV verbinden und als bisheriger Installationsbenutzer anmelden. Im Projektordner `python3 pi/doctor.py` ausführen. Dienstfehler zuerst klären. Die Diagnose liest nur; sie startet weder Wiedergabe noch Update.
-2. Dashboard von einem zweiten Gerät über `http://PI-IP:8088` öffnen. Anmeldung und unter Wartung angezeigte Version notieren. Bei abweichendem Port diesen verwenden.
-3. Protect verbinden, erreichbare Kamera wählen, Standbild prüfen und übernehmen. Am TV das Livebild öffnen und durch eine sichtbare Bewegung kontrollieren, dass es aktuell ist.
-4. Verdrahtung bei ausgeschaltetem Pi prüfen. Danach fünf vollständige Tasterzyklen testen: erster Druck Kamera, zweiter Druck Standby. Keine Fremdspannung an GPIO anlegen.
-5. Abschaltzeit auf eine Minute setzen und vom Start der Kamera bis zur Abschaltung messen. Danach den gewünschten Alltagswert wiederherstellen.
-6. Mit TV-Fernbedienung oder zunächst Tastatur Pfeile, OK und Zurück prüfen. Zwischen Kameras wählen, Ausschalten abbrechen und aus dem Kameraplayer zur Übersicht zurückkehren. Erst nach echten CEC-Tasten als fernbedienbar markieren.
-7. Für einen Ausfalltest vor Ort eine Kamera-/Netzverbindung kontrolliert unterbrechen. Veraltete Werte müssen erkennbar werden; nach Rückkehr muss die Wiedergabe selbstständig fortsetzen. Der Abschaltzeitpunkt darf dadurch nicht verlängert werden. Eine WLAN-Unterbrechung nicht über den einzigen Fernzugang auslösen.
-8. Pi regulär neu starten, wenn kein Update läuft. WLAN, Dashboard, Pi-Dienst, Wartungsdienst und sichtbare TV-Ansicht ohne manuelle Desktop-Anmeldung prüfen. Auch den Start mit zunächst ausgeschaltetem TV prüfen.
-9. Unter Wartung eine neuere veröffentlichte Version prüfen, Versionswechsel bestätigen und bis zum Abschluss warten. Version nach erneuter Anmeldung kontrollieren. Bestehendes Passwort, Kamera, Qualität, Abschaltzeit und TV-Zugang müssen erhalten bleiben. Taster und Livebild nochmals prüfen. Fehler-/Unterbrechungstests zunächst im isolierten Labor durchführen.
-10. Fernzugriff nach [FERNZUGRIFF.md](FERNZUGRIFF.md) aus einem fremden Netz abnehmen. Abschließend die alltägliche Bedienung gemeinsam mit der Oma ausprobieren.
+Der veröffentlichte App-Quellstand von v0.1.13 ist `c76cd0e1f281745fb4b860577b179b8ae2c00d15`.
 
-## Ergebnisse privat festhalten
+| Prüfung | Ergebnis und Nachweis |
+| --- | --- |
+| Python | **159 Tests erfolgreich** in [Linux-CI](https://github.com/loserat/kamerablick/actions/runs/42277207929). |
+| JavaScript | **40 Prüfungen erfolgreich** für Navigation, Statusdarstellung und Fernbedienungszustellung im selben Lauf. |
+| Release | [Image-Veröffentlichung](https://github.com/loserat/kamerablick/actions/runs/42277209123) erfolgreich; ARM64, ARMv7 und AMD64 im Image-Index bestätigt. |
+| Öffentlicher Download | ARM64-Image ohne GitHub-Anmeldung heruntergeladen; Versions- und Quellstandlabels stimmen mit dem Tag überein. |
+| Image-Funktion | Start, Login, geschützte Update-/Kameraschnittstellen, Passwortrotation, Sitzungswiderruf und Ablehnung privater Dateipfade geprüft. |
+| Große Kameraauswahl | Vier gespeicherte Beispielkameras im Browser bei 1280×720, 1920×1080 und 3840×2160; Pfeile, OK, Zurück und Ausschaltbestätigung geprüft. |
+| Wiederherstellung | Vorhandene isolierte Docker-Labore prüfen echte Containerwechsel, Rückkehr, Unterbrechung und datenerhaltende Neuinstallation mit Testgegenstellen für GitHub und systemd. Diese Labornachweise stammen teilweise aus früheren Versionen und sind keine neue Geräteprüfung von v0.1.13. |
 
-Für jeden Schritt Datum, Pi-/OS-Version, App-Version, Ergebnis und einen konkreten Nachweis notieren. Sinnvolle Nachweise sind ein redigierter Diagnosebericht, beobachtete Tasterzyklen, gemessene Abschaltzeit, tatsächlich empfangene CEC-Tasten und der Versionswechsel im Dashboard. Passwörter, API-Schlüssel, VPN-Anmeldelinks und ungekürzte private Konfigurationen nicht veröffentlichen.
+Der lokale Docker-Testlauf von v0.1.13 führte ebenfalls 159 Tests aus und übersprang einen Test für den dort fehlenden systemd-Parser. Der vollständige Linux-CI-Lauf ist der maßgebliche Nachweis für diese Parserprüfung.
 
-Die Gesamtprüfung ist erst abgeschlossen, wenn Installation, Kamera, Taster, TV-Bedienung und ein Browser-Update am echten Pi erfolgreich geprüft sind und der private Fernzugriff funktioniert. Unbestätigte Punkte bleiben offen.
+Die anonymisierte Zusammenfassung ist als [JSON-Prüfstand](verification/v0.1.13.json) verfügbar. Sie enthält Ergebnisse und öffentliche Referenzen, keine privaten Rohdaten. Reproduzierbare Testbefehle stehen unter [Entwicklung](ENTWICKLUNG.md).
+
+## Noch am Ziel zu verifizieren
+
+| Funktion | Erforderliche Beobachtung |
+| --- | --- |
+| Echter Protect-NVR | Zugang und Berechtigungen, korrektes Standbild und flüssiges aktuelles Livebild am TV. Protect-/Kameraversion und tatsächlich verwendete Qualität festhalten. |
+| Ereignisse | Echte Bewegung, Person und Fahrzeug soweit unterstützt; Zeitpunkte und Aktualitätsanzeige mit der Konsole vergleichen. |
+| Mehrere reale Kameras | Jede Kamera öffnen und aus dem echten Player zur neuen großen Auswahl zurückkehren; Fokus und Fernbedienung erneut prüfen. |
+| GPIO | Verdrahteten Taster mehrmals betätigen; Einschalten, zweiter Druck Standby und Entprellung beobachten. |
+| Abschaltung und Standby | Gewählte Abschaltzeit messen und das tatsächliche Verhalten des Fernsehers prüfen. Ein gesendeter CEC-Befehl allein ist keine Standby-Bestätigung. |
+| Ausfälle | Tatsächlichen Stream-/NVR-Ausfall, Rückkehr, sichtbaren Bildfortschritt und unveränderten Abschaltzeitpunkt prüfen. |
+| Endgültiger Standort | WLAN, Netzpfade, Kaltstart mit zunächst ausgeschaltetem TV und erneuten Start nach Stromausfall kontrolliert testen. |
+| Privater Fernzugriff | VPN einrichten und Dashboard sowie SSH aus einem fremden Netz einschließlich Pi-Neustart prüfen. |
+| Alltag | Bedienung gemeinsam mit der Oma vor Ort ausprobieren. |
+
+Diese Punkte bleiben offen, bis ein konkreter Gerätenachweis vorliegt. Erfolgreiche Softwaretests oder ein gespeicherter NVR-Zugang ersetzen sie nicht.
+
+## Eigene Installation abnehmen
+
+1. Im Projektordner als Installationsbenutzer `python3 .runtime/current/doctor.py --root "$PWD"` ausführen. Das Programm liest nur und schaltet den Fernseher nicht.
+2. Dashboard auf einem zweiten Gerät über `http://PI-IP:8088` öffnen. Anmeldung, Version und Updatebereitschaft prüfen.
+3. Kamera am NVR einrichten, Standbild laden und Livebild am TV durch eine sichtbare Bewegung kontrollieren.
+4. Mit der echten Fernbedienung Pfeile, OK, Zurück, Halten/Loslassen und Wechsel aus dem Player prüfen. Ausschalten zuerst abbrechen und danach bewusst bestätigen.
+5. Optionalen Taster bei ausgeschaltetem Pi korrekt verdrahten, anschließend Tasterzyklen und Abschaltzeit beobachten.
+6. Fehler-/Wiederanlaufprüfung lokal kontrolliert durchführen. Keine WLAN-Unterbrechung über den einzigen Fernzugang auslösen.
+7. Ein verfügbares veröffentlichtes Update über Wartung installieren und erhaltene Einstellungen sowie erneute Gerätefunktion prüfen.
+8. VPN-Prüfung nach [Fernzugriff](FERNZUGRIFF.md) durchführen und den Alltagstest abschließen.
+
+Für jeden Schritt Datum, App-/OS-Version, Ergebnis und einen konkreten Nachweis privat aufbewahren. Quellen, Sicherungen und bisherige Testnachweise bei der Speicherpflege erhalten. Der öffentliche Prüfstand wird nur um tatsächlich bestätigte Ergebnisse ergänzt.

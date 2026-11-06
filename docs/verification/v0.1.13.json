@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "date": "2026-11-06",
+  "release": "v0.1.13",
+  "release_source_commit": "c76cd0e1f281745fb4b860577b179b8ae2c00d15",
+  "summary_only": true,
+  "raw_device_evidence": "Retained privately; not published",
+  "test_setup": {
+    "pi_model": "Raspberry Pi 4 Model B Rev 1.2",
+    "architecture": "aarch64",
+    "tv_model": "Philips 55PUS6581/12"
+  },
+  "automated": {
+    "python_tests": 159,
+    "javascript_assertions": 40,
+    "linux_ci": "https://github.com/loserat/kamerablick/actions/runs/42277207929",
+    "release_ci": "https://github.com/loserat/kamerablick/actions/runs/42277209123",
+    "image_platforms": [
+      "linux/arm64",
+      "linux/arm/v7",
+      "linux/amd64"
+    ],
+    "anonymous_arm64_image_smoke": true,
+    "image_revision_matches_tag": true
+  },
+  "device_confirmed": {
+    "dashboard_direct_lan_access": true,
+    "automatic_start_observed": true,
+    "cec_arrow_received_and_visible_focus_changed": true,
+    "physical_remote_user_confirmed": true,
+    "browser_updates": [
+      [
+        "v0.1.10",
+        "v0.1.11"
+      ],
+      [
+        "v0.1.11",
+        "v0.1.12"
+      ],
+      [
+        "v0.1.12",
+        "v0.1.13"
+      ]
+    ],
+    "camera_settings_and_tv_pairing_preserved": true,
+    "password_change_authenticated_api": true,
+    "previous_password_and_admin_session_rejected": true,
+    "new_password_login_after_container_restart": true,
+    "new_password_browser_login": true,
+    "password_form_displayed": true,
+    "final_installation_diagnosis_passed": true,
+    "agent_kiosk_maintenance_active": true,
+    "automatic_service_failure_restarts_at_final_check": 0
+  },
+  "not_yet_device_verified": [
+    "Real Protect live video and event flow",
+    "All cameras with new TV selection and return from real player",
+    "Submitting the password form in a real browser",
+    "Physical GPIO button",
+    "Actual standby and automatic-off cycles",
+    "Real network failure and recovery",
+    "Final-site cold start and WLAN conditions",
+    "VPN access from an external network",
+    "Grandma everyday usability test"
+  ],
+  "compatibility_scope": "Confirmed CEC reception and listed functions on this exact TV model; not blanket TV or full-system certification"
+}

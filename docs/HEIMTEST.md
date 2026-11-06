@@ -22,7 +22,7 @@ docker compose -f compose.home-test.yaml up -d
 
 ## Den NVR in der App anmelden
 
-1. **Kamera** öffnen und die lokale NVR-Adresse eingeben.
+1. **Kameras** öffnen und die lokale NVR-Adresse eingeben.
 2. **Lokaler UniFi-Benutzer** auswählen, lokalen Benutzernamen und Passwort eintragen. Ein ui.com-Konto beziehungsweise eine Anmeldung mit MFA wird nicht unterstützt.
 3. Falls die Konsole ein eigenes Zertifikat verwendet, den angezeigten SHA-256-Fingerabdruck über einen vertrauenswürdigen Zugang mit der Konsole vergleichen und erst dann bestätigen.
 4. Verbinden, eine erreichbare Kamera auswählen und das Standbild prüfen. Qualität auswählen und die Kamera übernehmen.
@@ -39,7 +39,7 @@ Nach dem Übernehmen der Protect-Kamera unter **Übersicht → Standbild laden**
 
 ## Manuell hinzufügen und prüfen
 
-Mit **Streamadresse verwenden** einen Namen und die vorhandene RTSP-/RTSPS-Adresse eingeben. **Kamera speichern** wählt diese Kamera für die TV-Ansicht aus. Der vorhandene NVR-Zugang bleibt erhalten. Aktuell gibt es eine aktive TV-Kamera.
+Mit **Streamadresse verwenden** einen Namen und die vorhandene RTSP-/RTSPS-Adresse eingeben. **Kamera speichern** wählt diese Kamera für die TV-Ansicht aus. Der vorhandene NVR-Zugang bleibt erhalten. Mehrere Einträge bleiben gespeichert und sind am TV auswählbar; jeweils eine Kamera wird wiedergegeben.
 
 Unter **Wartung → Verbindung prüfen** werden die gespeicherte NVR-Anmeldung, Kameraliste, das Standbild und die Stream-Adresse erneut gelesen. Eine erfolgreiche Prüfung bestätigt noch keine laufende Videowiedergabe. Bei einer manuell eingegebenen Kamera ohne NVR-Zuordnung erfolgt die Livebildprüfung später am Pi.
 

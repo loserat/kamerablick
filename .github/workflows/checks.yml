@@ -16,6 +16,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - name: Dokumentation prüfen
+        run: python3 tools/check_docs.py
       - name: Abhängigkeiten installieren
         run: |
           python3 -m venv .test-env

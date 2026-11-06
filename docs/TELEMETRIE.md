@@ -1,6 +1,6 @@
 # Kamerastatus und empfangene Ereignisse
 
-Implementiert und lokal getestet, noch nicht am UNVR Instant verifiziert. Es wird ausschließlich die eingerichtete Protect-Kamera überwacht. Manuelle Stream-Adressen und Beispielkameras liefern keine vorgetäuschten Ereigniswerte.
+Implementiert und mit Testkonsole geprüft; eine vollständige Ereignisabnahme an der realen Protect-Zentrale ist noch offen. Es wird ausschließlich die eingerichtete Protect-Kamera überwacht. Manuelle Stream-Adressen und Beispielkameras liefern keine vorgetäuschten Ereigniswerte.
 
 ## Anzeigen
 
@@ -11,7 +11,7 @@ Im Dashboard unter „Kamera & Ereignisse“:
 - Letzte empfangene Bewegung, Person und Fahrzeug mit relativem und absolutem Zeitpunkt.
 - Aktueller Bewegungszustand nur, solange dafür ausreichend aktuelle Informationen vorliegen.
 
-Die TV-Ansicht zeigt bei einer Protect-Kamera eine kurze Zeile zur letzten Bewegung. Die technische Einrichtung bleibt im Dashboard. Vorhandene historische Zeitpunkte bleiben bei einer Unterbrechung sichtbar; die Ereignisverbindung wird dabei ausdrücklich als nicht aktuell dargestellt.
+Die einfache TV-Ansicht konzentriert sich auf Kameraauswahl und Wiedergabe. Ereignisse und technische Einrichtung bleiben im Dashboard. Vorhandene historische Zeitpunkte bleiben bei einer Unterbrechung sichtbar; die Ereignisverbindung wird dabei ausdrücklich als nicht aktuell dargestellt.
 
 ## Woher kommen die Werte?
 
@@ -48,4 +48,4 @@ Die vorhandene Updatesicherung erfasst diese JSON-Datei automatisch mit. Eine be
 
 Die Tests verwenden eine lokale HTTPS-/WebSocket-Testkonsole mit eigenem Zertifikat. Geprüft sind tatsächliche Handshakes, empfangene Ereignisse, stille Verbindungen, fehlende Pong-Antworten, reguläres Verbindungsende, Wiederverbindung, Zertifikatwechsel, Schlüsselablehnung und Weiterleitungsschutz. Weitere Tests prüfen Speicherung, Neustart, Kamerwechsel, doppelte/vertauschte Ereignisse und die API-Ausgabe an Dashboard und eingeschränkte TV-Ansicht.
 
-Am echten Instant sind noch zu prüfen: verfügbare API-Version, Kameramodell, Smart-Detection-Fähigkeiten, tatsächliches Ereignisformat, Konsolen-/Pi-Uhren und Verhalten bei Netzwerk- und Protect-Neustarts.
+An der realen Protect-Zentrale sind noch zu prüfen: verfügbare API-Version, Kameramodell, Smart-Detection-Fähigkeiten, tatsächliches Ereignisformat, Konsolen-/Pi-Uhren und Verhalten bei Netzwerk- und Protect-Neustarts.

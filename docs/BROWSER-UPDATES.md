@@ -2,6 +2,10 @@
 
 Auf dem Pi unter **Wartung** zeigt Kamerablick die installierte und die aktuelle stabile GitHub-Version. **Jetzt aktualisieren → Sichern und aktualisieren** startet den bestätigten Auftrag auf dem Pi. Die Kameraeinrichtung und Zugangswerte bleiben erhalten.
 
+## Wenn kein Updateknopf erscheint
+
+Sind installierte Version und GitHub-Version gleich, ist die Installation aktuell. **Jetzt aktualisieren** wird erst für eine neuere veröffentlichte Version angezeigt. Dokumentationsänderungen auf `main` sind keine App-Releases. Die Versionsprüfung lässt sich direkt über die Pi-IP ausführen; ein Ping allein testet diese Funktion nicht.
+
 ## Vorhandene Installation einmalig umstellen
 
 Versionen bis einschließlich v0.1.3 haben noch keinen Updateknopf und keinen unabhängigen Wartungsdienst. Deshalb ist für den Übergang einmalig SSH nötig. Es wird keine zweite Installation angelegt.
@@ -103,3 +107,5 @@ Automatische Tests prüfen Anmeldung und Bestätigung, feste Releasequelle, Imag
 Am 06.11.2026 wurde zusätzlich auf einem echten Pi 4B das Update **v0.1.10 → v0.1.11** über die tatsächliche Wartungsseite ausgelöst, bestätigt und dort erfolgreich abgeschlossen. Vorher-nachher-Prüfungen bestätigten den Erhalt der Einstellungen, des Passworts und der TV-Kopplung. Container und alle drei Dienste waren anschließend aktiv; nach Korrektur einer verbliebenen Einrichtungsmarkierung war auch die lesende Installationsdiagnose vollständig erfolgreich. Das bestätigt den Updateweg auf diesem Gerät; Livebild, Taster und Bedienung der neuen Ansicht sind gesondert zu beobachten. [Speicher und Sicherungen](WARTUNG.md).
 
 Der Folgetest **v0.1.11 → v0.1.12** wurde am selben Tag über die Oberfläche ebenfalls erfolgreich abgeschlossen. Nach erneuter Anmeldung und Neuladen waren v0.1.12 sowie die neue Anzeige „Zuletzt geprüft“ sichtbar. Der Vergleich bestätigte erhaltene Einstellungen, Passwort und TV-Kopplung. Die Wartungslaufzeit passte zur aktuellen Installation; alle drei Dienste liefen ohne automatische Fehlerneustarts. Die Installationsdiagnose war vollständig erfolgreich. Für diesen Folgetest war keine manuelle Dienst- oder Installationsreparatur nötig.
+
+Auch **v0.1.12 → v0.1.13** wurde über die echte Wartungsseite installiert. Danach wurden die neue Passwortverwaltung und die Anmeldung nach Containerneustart separat am Pi geprüft. Der aktuelle, zusammengeführte Nachweis steht im [Prüfprotokoll](ABNAHME.md).

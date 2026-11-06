@@ -1,10 +1,10 @@
 # Kamerablick installieren
 
-Zielgerät ist ein Raspberry Pi 4B mit WLAN und Desktop. Eine bestehende Pi-Installation wurde gemeldet; ihr aktueller Dienststand und die Gerätefunktionen sind noch nicht abgenommen. Die Protect-Zentrale wurde als „Instant“ benannt. TV-Modell und genaue Protect-Version sind noch offen.
+Zielgerät ist ein Raspberry Pi 4B mit WLAN und Desktop. Start, Dashboard, Wartung und CEC-Tastenempfang wurden am Pi 4B mit Philips 55PUS6581/12 bestätigt. Die genaue Trennung zwischen Gerätetest, Softwaretest und offenen Kamerafunktionen steht im [Prüfprotokoll](ABNAHME.md).
 
 ## 1. Raspberry Pi vorbereiten
 
-Ausgangspunkt für den Pi 4B ist Raspberry Pi OS **(64 Bit) mit Desktop**. WLAN, Land, Benutzer und SSH können bereits im Raspberry Pi Imager eingerichtet werden. Der kurze Pi-4-Einstieg steht in [PI4.md](PI4.md); die alternative Pi-2-Anleitung für 32 Bit bleibt in [PI2.md](PI2.md). Der Benutzer, der später automatisch am Desktop angemeldet wird, betreibt auch Kamerablick. WLAN-Empfang am TV und die tatsächlich flüssig wiedergegebene Auflösung prüfen wir beim ersten Gerätetest.
+Ausgangspunkt für den Pi 4B ist Raspberry Pi OS **(64 Bit) mit Desktop**. WLAN, Land, Benutzer und SSH können bereits im Raspberry Pi Imager eingerichtet werden. Der kurze Pi-4-Einstieg steht in [PI4.md](PI4.md); die alternative Pi-2-Anleitung für 32 Bit bleibt in [PI2.md](PI2.md). Der Benutzer, der später automatisch am Desktop angemeldet wird, betreibt auch Kamerablick. WLAN-Empfang und flüssige Wiedergabe am tatsächlichen Aufstellort gesondert prüfen.
 
 Benötigt werden:
 
@@ -19,7 +19,15 @@ Die Bedienung soll später ohne Anmeldung möglich sein. Desktop-Autologin und B
 
 ## 2. Projekt prüfen und installieren
 
-Den Projektordner beispielsweise nach `~/oma-tv` kopieren. Als normaler Desktop-Benutzer im Projektordner:
+Den veröffentlichten Quellstand als normaler Desktop-Benutzer beziehen:
+
+```sh
+git clone --branch v0.1.13 https://github.com/loserat/kamerablick.git ~/kamerablick
+cd ~/kamerablick
+sudo loginctl enable-linger "$USER"
+```
+
+Voraussetzungen lesend prüfen:
 
 ```sh
 python3 pi/install.py --check
@@ -40,10 +48,10 @@ Der Installer:
 - lädt das versionierte Image und startet das Dashboard ohne lokalen Containerbau;
 - wartet auf den Bereitschaftstest des Containers;
 - legt eine versionierte Pi-Laufzeit unter `.runtime/releases/` an;
-- richtet Benutzer-Dienste für Taster/TV und Chromium ein;
+- richtet Benutzer-Dienste für Taster/TV, Chromium und die unabhängige Wartung ein;
 - registriert einen eigenen Desktop-Autostart, der die aktuelle Bildschirmumgebung an die Dienste übergibt.
 
-Eigene bestehende Service- oder Autostartdateien gleichen Namens werden nicht überschrieben. Bei einem Fehler die Meldung prüfen und den Installer erneut ausführen; nicht einfach eigene Desktop-Konfigurationen löschen. Der Installer schreibt keine Zugangswerte in seine Ausgabe. Bei einem bereits installierten Image ist ein Versionswechsel über `pi/update.sh` vorgesehen. Ohne `--image` ist weiterhin ein lokaler Entwicklerbau möglich.
+Eigene bestehende Service- oder Autostartdateien gleichen Namens werden nicht überschrieben. Bei einem Fehler die Meldung prüfen und den Installer erneut ausführen; nicht einfach eigene Desktop-Konfigurationen löschen. Der Installer schreibt keine Zugangswerte in seine Ausgabe. Bei einer vorhandenen verwalteten Installation erfolgen normale App-Updates über Wartung; `pi/update.sh` bleibt ein manueller Wartungsweg. Ohne `--image` ist weiterhin ein lokaler Entwicklerbau möglich.
 
 Nach Ab- und erneuter Anmeldung am Desktop startet die TV-Ansicht automatisch. Der Browser wartet auf das Dashboard und erhält lokal einen eingeschränkten TV-Zugang. Ein Dashboard-Passwort muss nicht am Fernseher eingegeben werden. Die TV-Ansicht zeigt große Kamerakacheln und eine eigene Ausschaltaktion. Ohne eingerichtete Kamera erscheint ein kurzer Hinweis; Einstellungen werden im Dashboard vorgenommen.
 
@@ -72,7 +80,7 @@ ssh -L 8099:127.0.0.1:8088 BENUTZER@PI-ADRESSE
 
 Anschließend `http://127.0.0.1:8099` öffnen. Es ist keine öffentliche Portfreigabe vorgesehen.
 
-Unter „Kamera“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Streamadresse verwenden“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
+Unter „Kameras“ die lokale Protect-Adresse eintragen und die Anmeldeart wählen: lokaler UniFi-Benutzer mit Passwort oder API-Schlüssel. Beim lokalen Login kann ein Schlüssel für moderne Streams und laufende Ereignisse ergänzt werden. Kamera und Qualität auswählen, Standbild prüfen und übernehmen. Eine vorhandene RTSP-/RTSPS-Kamera kann alternativ mit „Streamadresse verwenden“ gespeichert werden. Der Ablauf und ein Test ohne Pi stehen in [HEIMTEST.md](HEIMTEST.md). Bei einem eigenen Zertifikat den Fingerabdruck zuerst mit dem echten Konsolenzertifikat über einen vertrauenswürdigen Zugang vergleichen.
 
 VPN und SSH sind getrennte Systemkomponenten. Den privaten Zugang nach [Fernzugriff](FERNZUGRIFF.md) einrichten und aus einem fremden Netzwerk prüfen. Es wird keine öffentliche Portfreigabe für das Dashboard oder Protect benötigt.
 
@@ -82,25 +90,25 @@ Bei ausgeschaltetem Pi einen spannungsfreien Schließer zwischen GPIO17 (BCM; ph
 
 TV-CEC im Fernseher aktivieren. Im Dashboard zuerst Kamera und TV-Befehle prüfen, danach den Taster. GPIO-Taster und CEC funktionieren erst mit passenden Geräteberechtigungen und tatsächlich angeschlossener Hardware.
 
-Die TV-Ansicht ist mit Tastatur nutzbar. CEC-Empfang für Pfeile, OK und Zurück ist implementiert; ob die TV-Fernbedienung diese Tasten weitergibt, muss am Fernseher geprüft werden. Unter „Wartung → Fernbedienung“ stehen Adapterzustand, letzte empfangene Taste und Verbindung zur lokalen TV-Ansicht. Vorgehen und Grenzen: [Fernbedienung](FERNBEDIENUNG.md).
+Die TV-Ansicht ist mit Tastatur nutzbar. CEC-Empfang für Pfeile, OK und Zurück ist implementiert; der Empfang am Philips 55PUS6581/12 ist bestätigt. Andere TV-Modelle und der vollständige Kamera-/Playerablauf müssen am Ziel geprüft werden. Unter „Wartung → Fernbedienung“ stehen Adapterzustand, letzte empfangene Taste und Verbindung zur lokalen TV-Ansicht. Vorgehen und Grenzen: [Fernbedienung](FERNBEDIENUNG.md).
 
 ## Dienste und Diagnose
 
 Als bisheriger Installationsbenutzer im Projektordner:
 
 ```sh
-python3 pi/doctor.py
+python3 .runtime/current/doctor.py --root "$PWD"
 ```
 
-Die Diagnose liest Containerzustand, Dienststatus und Ladepfade, vergleicht die lokalen Pi-Schlüssel und prüft Dashboard, Pi-Dienst und Wartungsdienst. Sie gibt keine Passwörter, Stream-Adressen oder Schlüssel aus und schaltet den TV nicht. Für einen maschinenlesbaren Bericht `python3 pi/doctor.py --json` verwenden. Exitcode 1 bedeutet mindestens einen fehlgeschlagenen Installationstest; Hinweise allein führen nicht zum Fehlercode. Das ist keine Hardwareabnahme.
+Die Diagnose liest Containerzustand, Dienststatus und Ladepfade, vergleicht die lokalen Pi-Schlüssel und prüft Dashboard, Pi-Dienst und Wartungsdienst. Sie gibt keine Passwörter, Stream-Adressen oder Schlüssel aus und schaltet den TV nicht. Für einen maschinenlesbaren Bericht `python3 .runtime/current/doctor.py --root "$PWD" --json` verwenden. Exitcode 1 bedeutet mindestens einen fehlgeschlagenen Installationstest; Hinweise allein führen nicht zum Fehlercode. Das ist keine Hardwareabnahme.
 
 Bei einer älteren Installation ohne `pi/doctor.py` zuerst den aktuellen Quellstand beziehen. Nach einem Image-Update steht die Diagnose auch unter `.runtime/current/doctor.py` bereit. Der neue Wartungs-Bereitschaftstest benötigt ebenfalls die aktuelle Pi-Laufzeit. Fehlt er bei einer alten Version, heißt das allein noch nicht, dass deren Updatefunktion defekt ist.
 
 Für die gezielte Dienstprüfung:
 
 ```sh
-systemctl --user status oma-tv-session.target oma-tv-agent.service oma-tv-kiosk.service
-journalctl --user -u oma-tv-agent -u oma-tv-kiosk -n 50
+systemctl --user status oma-tv-session.target oma-tv-agent.service oma-tv-kiosk.service oma-tv-maintenance.service
+journalctl --user -u oma-tv-agent.service -u oma-tv-kiosk.service -u oma-tv-maintenance.service -n 50 --no-pager
 ```
 
 Der Desktop-Autostart startet das gemeinsame Sitzungsziel. Bei Ende der lokalen grafischen Sitzung beendet die Startbrücke die zugehörigen Dienste. Diese Anbindung erfordert einen tatsächlichen Gerätetest mit der vorgesehenen Desktop-Version.
