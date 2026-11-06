@@ -6,6 +6,7 @@
 - Gesalzener Passwortprüfwert im privaten Datenvolume; kein neues Klartextpasswort in der Konfiguration. Bestehende Installationen verwenden bis zur ersten Änderung weiterhin ihren bisherigen Zugang.
 - Nach dem Speichern alle Dashboard-Sitzungen abmelden; UniFi, Kameras und TV-Kopplung bleiben erhalten.
 - Fehlversuche begrenzen, Passwortänderung während eines Updates sperren und bei einem Speicherfehler den bisherigen Zugang erhalten.
+- Am echten Pi 4B installiert: Passwort über die authentifizierte App-Schnittstelle geändert, alten Zugang und alte Sitzung abgewiesen, erneute Anmeldung nach Containerneustart bestätigt. Anmeldung und neues Einstellungsformular im Browser geprüft; Kameraeinstellungen und TV-Kopplung erhalten.
 
 ## v0.1.12
 
