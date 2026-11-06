@@ -12,4 +12,14 @@ assert.equal(next([],'missing','ArrowDown'),null);
 const dialog=[{id:'cancel',x:150,y:150},{id:'confirm',x:400,y:150}];
 assert.equal(next(dialog,'cancel','ArrowRight'),'confirm');
 assert.equal(next(dialog,'confirm','ArrowLeft'),'cancel');
-console.log('10 Prüfungen zur Pfeiltasten-Navigation bestanden.');
+const cameras=[{id:'entry',x:100,y:100,group:'cameras'},{id:'garden',x:300,y:100,group:'cameras'},
+  {id:'terrace',x:100,y:300,group:'cameras'},{id:'power',x:200,y:500}];
+assert.equal(next(cameras,'entry','ArrowRight'),'garden');
+assert.equal(next(cameras,'garden','ArrowRight'),'garden');
+assert.equal(next(cameras,'garden','ArrowDown'),'terrace');
+assert.equal(next(cameras,'terrace','ArrowUp'),'entry');
+assert.equal(next(cameras,'terrace','ArrowRight'),'terrace');
+assert.equal(next(cameras,'terrace','ArrowDown'),'power');
+assert.equal(next(cameras,'power','ArrowUp'),'terrace');
+assert.equal(next(cameras.filter(c=>c.id!=='terrace'),'garden','ArrowDown'),'power');
+console.log('18 Prüfungen zur Pfeiltasten-Navigation bestanden.');

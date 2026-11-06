@@ -99,6 +99,112 @@ class ApiTest(unittest.TestCase):
             self.assertEqual(self.call('/api/config',{'gpio_pin':invalid})[0],400)
         self.assertEqual(server.config()['gpio_pin'],17)
         self.assertEqual(os.stat(server.DATA/'config.json').st_mode&0o777,0o600)
+    def test_multiple_manual_cameras_are_retained_and_tv_can_only_choose_saved_entries(self):
+        first={'camera_name':'Haustür','stream_url':'rtsps://camera.invalid/private-one'}
+        second={'camera_name':'Garten','stream_url':'rtsps://camera.invalid/private-two'}
+        self.assertEqual(self.call('/api/config',first)[0],200)
+        self.assertEqual(self.call('/api/config',second)[0],200)
+        self.assertEqual(self.call('/api/cameras',token='invalid')[0],401)
+        access=self.call('/api/tv/pair',{})[1]['token']
+        code,data=self.call('/api/tv/status',token=access)
+        self.assertEqual(code,200)
+        self.assertEqual([r['name'] for r in data['cameras']],['Haustür','Garten'])
+        self.assertNotIn('private-',json.dumps(data))
+        self.assertNotIn('stream_url',json.dumps(data))
+        key=data['cameras'][0]['id']
+        self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':key},access)[0],200)
+        self.assertEqual(server.config()['stream_url'],first['stream_url'])
+        self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':'manual:invented'},access)[0],400)
+        self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':key,'gpio_pin':2},access)[0],400)
+        self.assertEqual(self.call('/api/cameras/remove',{'camera_id':key},access)[0],401)
+        self.assertEqual((server.DATA/'manual-cameras.json').stat().st_mode&0o777,0o600)
+    def test_home_test_does_not_invent_cameras_before_connecting_a_real_source(self):
+        access=self.call('/api/tv/pair',{})[1]['token']
+        with patch.object(server,'HOME_TEST',True):
+            self.assertEqual(self.call('/api/tv/status',token=access)[1]['cameras'],[])
+    def test_legacy_manual_camera_is_not_lost_when_adding_another_camera(self):
+        server.save('config.json',server.DEFAULT|{'camera_name':'Bisherige Kamera','stream_url':'rtsps://private/legacy'})
+        self.assertEqual(self.call('/api/config',{'camera_name':'Garten','stream_url':'rtsps://private/garden'})[0],200)
+        data=self.call('/api/cameras')[1]
+        self.assertEqual([r['name'] for r in data['cameras']],['Bisherige Kamera','Garten'])
+        self.assertEqual(self.call('/api/cameras/select',{'camera_id':data['cameras'][0]['id']})[0],200)
+        self.assertEqual(server.config()['stream_url'],'rtsps://private/legacy')
+    def test_manual_library_write_failure_restores_previous_configuration(self):
+        self.call('/api/config',{'camera_name':'Haustür','stream_url':'rtsps://private/one'})
+        previous=server.config();stored=server.read('manual-cameras.json',[]);write=server.save
+        def fail_library(name,value):
+            if name=='manual-cameras.json':raise OSError('disk unavailable')
+            return write(name,value)
+        with patch.object(server,'save',side_effect=fail_library):
+            self.assertEqual(self.call('/api/config',{'camera_name':'Garten','stream_url':'rtsps://private/two'})[0],502)
+        self.assertEqual(server.config(),previous)
+        self.assertEqual(server.read('manual-cameras.json',[]),stored)
+    def test_protect_tv_switch_preserves_settings_and_rejects_offline_or_unknown_cameras(self):
+        server.DEMO=False
+        previous=server.DEFAULT|{'camera_source':'protect','camera_id':'one','stream_url':'rtsps://private/one','gpio_pin':21,'auto_off_minutes':15}
+        server.save('config.json',previous)
+        cred={'host':'https://private-console.invalid','api_key':'private-test-key'}
+        server.save('protect.json',cred)
+        access=self.call('/api/tv/pair',{})[1]['token']
+        rows=[{'id':'one','name':'Haustür','state':'CONNECTED'},
+              {'id':'two','name':'Garten','state':'CONNECTED'},
+              {'id':'three','name':'Garage','state':'DISCONNECTED'}]
+        with patch.object(server,'Protect') as factory,patch.object(server,'agent',return_value={'active':False}),patch.object(server,'maintenance_status',return_value={'job':None}):
+            factory.return_value.cameras.return_value=rows
+            factory.return_value.streams.return_value='rtsps://private/two'
+            code,data=self.call('/api/tv/status',token=access)
+            self.assertEqual(code,200)
+            self.assertEqual(len(data['cameras']),3)
+            self.call('/api/tv/status',token=access)
+            factory.return_value.cameras.assert_called_once()
+            for secret in ('private-console','private-test-key','rtsps://'):
+                self.assertNotIn(secret,json.dumps(data))
+            self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':'protect:two'},access)[0],200)
+            factory.return_value.streams.assert_called_once_with('two','medium')
+            updated=server.config()
+            self.assertEqual(updated['camera_id'],'two')
+            self.assertEqual(updated['gpio_pin'],21)
+            self.assertEqual(updated['auto_off_minutes'],15)
+            self.assertEqual(server.credentials(),cred)
+            for key in ('protect:three','protect:invented'):
+                self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':key},access)[0],400)
+                self.assertEqual(server.config(),updated)
+    def test_only_admin_can_enable_a_missing_protect_stream(self):
+        server.save('protect.json',{'host':'https://private.invalid','api_key':'private-key'})
+        access=self.call('/api/tv/pair',{})[1]['token']
+        with patch.object(server,'Protect') as factory:
+            factory.return_value.cameras.return_value=[{'id':'two','name':'Garten','state':'CONNECTED'}]
+            factory.return_value.streams.return_value='rtsps://private/two'
+            self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':'protect:two','enable_stream':True},access)[0],400)
+            factory.return_value.streams.assert_not_called()
+            self.assertEqual(self.call('/api/cameras/select',{'camera_id':'protect:two','enable_stream':True})[0],200)
+            factory.return_value.streams.assert_called_once_with('two','medium',enable=True)
+    def test_tv_camera_failure_keeps_working_camera_and_hides_protect_details(self):
+        server.DEMO=False
+        previous=server.DEFAULT|{'camera_source':'protect','camera_id':'one','stream_url':'rtsps://secret/one'}
+        server.save('config.json',previous)
+        server.save('protect.json',{'host':'https://private.invalid','api_key':'private-key'})
+        access=self.call('/api/tv/pair',{})[1]['token']
+        with patch.object(server,'Protect') as factory,patch.object(server,'maintenance_status',return_value={'job':None}):
+            factory.return_value.cameras.return_value=[{'id':'two','name':'Garten','state':'CONNECTED'}]
+            factory.return_value.streams.side_effect=ProtectError('private internal error',409,host='private-host',fingerprint='private-pin')
+            code,data=self.call('/api/tv/action',{'action':'on','camera_id':'protect:two'},access)
+        self.assertEqual(code,400)
+        self.assertNotIn('private',json.dumps(data))
+        self.assertEqual(server.config(),previous)
+    def test_camera_removal_and_switching_are_admin_only_and_blocked_during_updates(self):
+        self.call('/api/config',{'camera_name':'Haustür','stream_url':'rtsps://private/one'})
+        self.call('/api/config',{'camera_name':'Garten','stream_url':'rtsps://private/two'})
+        rows=self.call('/api/cameras')[1]['cameras'];first,second=[r['id'] for r in rows]
+        self.assertEqual(self.call('/api/cameras/remove',{'camera_id':second})[0],400)
+        self.assertEqual(self.call('/api/cameras/select',{'camera_id':first})[0],200)
+        self.assertEqual(self.call('/api/cameras/remove',{'camera_id':second})[0],200)
+        self.assertEqual(len(self.call('/api/cameras')[1]['cameras']),1)
+        access=self.call('/api/tv/pair',{})[1]['token']
+        server.DEMO=False
+        with patch.object(server,'maintenance_status',return_value={'job':{'busy':True}}):
+            self.assertEqual(self.call('/api/cameras/select',{'camera_id':first})[0],409)
+            self.assertEqual(self.call('/api/tv/action',{'action':'on','camera_id':first},access)[0],409)
     def test_demo_selection_and_countdown(self):
         self.assertEqual(self.call('/api/protect/connect',{'demo':True})[0],200)
         self.assertEqual(self.call('/api/protect/select',{'camera_id':'not-found'})[0],400)

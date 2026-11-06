@@ -1,25 +1,40 @@
 <!doctype html>
 <html lang="de">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#191b1f"><title>Kamerablick · TV</title><link rel="icon" type="image/svg+xml" href="/icon.svg"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="stylesheet" href="/tv.css"></head>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#17191b"><title>Kamerablick · TV</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg"><link rel="stylesheet" href="/tv.css">
+</head>
 <body>
-<header><a class="brand" href="/tv" tabindex="-1"><img src="/icon.svg" alt="" width="42" height="42"> Kamerablick</a><span id="demo-badge" class="badge" hidden>Testmodus</span><time id="clock" aria-label="Uhrzeit"></time></header>
+<svg class="symbols" aria-hidden="true"><symbol id="camera-glyph" viewBox="0 0 32 32"><rect x="3" y="8" width="26" height="19" rx="4"/><path d="m10 8 2-3h8l2 3"/><circle cx="16" cy="17" r="6"/></symbol></svg>
+<header><div class="brand"><img src="/icon.svg" alt="" width="42" height="42">Kamerablick</div><span id="demo-badge" class="badge" hidden>Vorschau</span><time id="clock" aria-label="Uhrzeit"></time></header>
 <main>
-  <section id="pairing" class="message-panel" hidden><div class="large-symbol">◉</div><h1>TV verbinden</h1><p>Im Dashboard „TV-Ansicht öffnen“ wählen.</p><a class="plain-button" data-nav="setup" href="/">Zum Dashboard</a></section>
-  <section id="home" hidden>
-    <div class="intro"><h1>Kamera ansehen</h1></div>
-    <div class="tiles" role="group" aria-label="TV-Menü">
-      <button id="watch" class="tile watch" data-nav="watch" disabled><span class="tile-top"><span class="camera-icon" aria-hidden="true">◉</span><span class="pill" id="camera-state">Wird geladen</span></span><span class="tile-title" id="camera-name">Deine Kamera</span><span class="tile-description">Kamerabild ansehen</span><span class="tile-bottom"><span class="key">OK</span> Öffnen <span aria-hidden="true">↗</span></span></button>
-      <button id="help" class="tile help" data-nav="help"><span class="small-icon" aria-hidden="true">?</span><span class="tile-title">Hilfe</span><span class="tile-description">Bedienung</span></button>
-      <button id="power" class="tile power" data-nav="power"><span class="small-icon" aria-hidden="true">⏻</span><span class="tile-title">Fernseher aus</span><span class="tile-description">Standby</span></button>
-    </div>
-    <p id="tv-motion" class="connection-hint" hidden></p><p id="connection-hint" class="connection-hint" role="status">Verbindung wird geprüft …</p>
+  <section id="pairing" class="message-panel" hidden>
+    <h1>Bitte um Hilfe bitten</h1><p>Die TV-Ansicht muss noch eingerichtet werden.</p>
+    <a class="plain-button secondary" data-nav="setup" href="/">Einrichtung öffnen</a>
   </section>
-  <section id="viewing" class="message-panel viewing" hidden><span class="eyebrow" id="viewing-label">KAMERAANSICHT</span><div class="view-frame"><span class="large-symbol">◉</span><h1 id="viewing-title">Haustür</h1><p id="viewing-description">Das Kamerabild wird am Fernseher geöffnet.</p><span id="remaining" class="remaining"></span></div><button class="plain-button" id="back-to-menu" data-nav="back-to-menu">← Zur Übersicht</button><p class="hint"><strong>Zurück</strong> oder <strong>Esc</strong>: Übersicht</p></section>
-  <section id="sleeping" class="message-panel" hidden><div class="large-symbol">☾</div><h1>Standby</h1><p id="sleep-message">Standby wurde angefordert.</p><button class="plain-button" id="wake" data-nav="wake">Zur Übersicht</button></section>
+  <section id="home" hidden>
+    <h1>Welche Kamera?</h1>
+    <div id="tv-cameras" class="camera-grid" role="group" aria-label="Kameras"></div>
+    <div id="empty-state" class="empty-state"><p id="empty-message">Kameras werden geladen …</p></div>
+    <p id="connection-hint" class="connection-hint" role="status"></p>
+    <div class="bottom-actions"><button id="power" class="power-button" data-nav="power"><span aria-hidden="true">⏻</span> Fernseher ausschalten</button></div>
+  </section>
+  <section id="viewing" class="message-panel" hidden>
+    <svg class="view-icon" aria-hidden="true"><use href="#camera-glyph"/></svg>
+    <h1 id="viewing-title">Kamera</h1><p id="viewing-description" role="status">Kamera wird verbunden …</p>
+    <button class="plain-button" id="back-to-menu" data-nav="back-to-menu">Kamera wechseln</button>
+  </section>
+  <section id="sleeping" class="message-panel" hidden>
+    <h1>Ausschalten …</h1><p id="sleep-message"></p>
+    <button class="plain-button secondary" id="wake" data-nav="wake">Zur Kameraauswahl</button>
+  </section>
 </main>
-<footer><div><span class="key">↑ ↓ ← →</span> Auswählen <span class="separator"></span><span class="key">OK</span> Öffnen <span class="separator"></span><span class="key">Zurück</span> Übersicht</div></footer>
-<dialog id="help-dialog" aria-labelledby="help-title"><h2 id="help-title">Bedienung</h2><div class="help-rows"><p><span class="key">↑ ↓ ← →</span><span>Auswählen</span></p><p><span class="key">OK</span><span>Öffnen</span></p><p><span class="key">Zurück</span><span>Zur Übersicht</span></p></div><p class="dialog-note">Tastatur: Enter = OK · Esc = Zurück</p><button class="plain-button" data-nav="close-help" id="close-help">Schließen</button></dialog>
-<dialog id="power-dialog" aria-labelledby="power-title"><span class="large-symbol small">⏻</span><h2 id="power-title">Fernseher ausschalten?</h2><div class="dialog-buttons"><button class="plain-button secondary" data-nav="cancel-power" id="cancel-power">Zurück</button><button class="plain-button" data-nav="confirm-power" id="confirm-power">Ja, ausschalten</button></div></dialog>
+<footer id="key-hint">Pfeiltasten: auswählen <span aria-hidden="true">·</span> OK: ansehen</footer>
+<dialog id="power-dialog" aria-labelledby="power-title">
+  <h2 id="power-title">Fernseher ausschalten?</h2>
+  <div class="dialog-buttons"><button class="plain-button secondary" data-nav="cancel-power" id="cancel-power">Nein, zurück</button><button class="plain-button" data-nav="confirm-power" id="confirm-power">Ja, ausschalten</button></div>
+</dialog>
 <div id="notice" role="status" hidden></div>
-<script src="/tv-navigation.js"></script><script src="/telemetry-view.js"></script><script src="/tv-remote.js"></script><script src="/tv.js"></script>
+<script src="/tv-navigation.js"></script><script src="/tv-remote.js"></script><script src="/tv.js"></script>
 </body></html>

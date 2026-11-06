@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg?branch=main" alt="Automatische Prüfungen"></a>
-  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.10-44464f" alt="Aktuelle Version"></a>
+  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.11-44464f" alt="Aktuelle Version"></a>
   <img src="https://img.shields.io/badge/Raspberry_Pi-4B-44464f" alt="Zielgerät Raspberry Pi 4B">
   <img src="https://img.shields.io/badge/Status-fr%C3%BChe_Entwicklung-e4e4e7?labelColor=44464f" alt="Frühe Entwicklung">
 </p>
@@ -28,19 +28,19 @@ Kamerablick entstand für meine Oma: Sie soll sehen können, wer vor der Tür st
 
 Ein Taster am Raspberry Pi schaltet den Fernseher ein und öffnet die eingerichtete Kamera. Der nächste Druck schickt den TV in Standby. Alternativ gibt es eine übersichtliche TV-Ansicht mit großen Schaltflächen, sichtbarem Fokus und Pfeiltasten-/OK-Bedienung. Einrichtung und Wartung erledigst du im separaten Dashboard.
 
-> **Stand:** Software und Docker-Images sind veröffentlicht und lokal geprüft. Die Inbetriebnahme am echten Pi 4B, an Protect und am Fernseher steht noch aus. Welche TV-Fernbedienung funktioniert, hängt vom HDMI-CEC-Empfang des Fernsehers ab. [Prüfstand und Grenzen →](docs/ABNAHME.md)
+> **Stand:** Automatischer Start, Dashboard-Zugriff und Fernbedienung wurden an einem echten Pi 4B mit Philips-TV geprüft. Ein App-Update über den Wartungsdienst lief mit erhaltenen Einstellungen durch. Echte Protect-Wiedergabe, GPIO-Taster und privater Fernzugriff müssen am jeweiligen Ziel gesondert geprüft werden. [Prüfstand und Grenzen →](docs/ABNAHME.md)
 
 ## Zwei Ansichten. Für zwei Aufgaben.
 
 ### Für den Fernseher
 
-Große Kacheln für Kamera, kurze Hilfe und Ausschalten mit Bestätigung. Pfeile wählen aus, **OK** öffnet, **Zurück** führt zur Übersicht.
+Höchstens zwei große Kamerakacheln nebeneinander, große Namen und eine helle Auswahlmarkierung. Pfeile wählen die Kamera, **OK** öffnet das Bild, **Zurück** führt zur Kameraauswahl. Ausschalten bleibt eine eigene Aktion mit Bestätigung. Die Größen passen sich auch an HD- und 4K-Fernseher an.
 
 ![TV-Ansicht mit sichtbarer Auswahl im Testmodus](docs/assets/tv-ansicht.jpg)
 
 ### Für die Einrichtung
 
-Am lokalen NVR mit UniFi-Benutzer oder API-Schlüssel anmelden, Kamera auswählen, Standbild prüfen und übernehmen. Die Stream-Adresse wird automatisch ermittelt. Danach lassen sich Taster, Abschaltzeit und Kamerastatus zentral einstellen beziehungsweise prüfen.
+Am lokalen NVR mit UniFi-Benutzer oder API-Schlüssel anmelden, eine Startkamera auswählen, Standbild prüfen und übernehmen. Weitere Protect-Kameras erscheinen unter „Kameras am Fernseher“. Mit „Für TV einrichten“ kann der jeweilige Stream freigegeben und die Kamera ausgewählt werden. Unter „Eigene Kamera hinzufügen“ lassen sich mehrere manuelle Streams speichern. Bestehende manuelle Kameras bleiben beim Ergänzen erhalten.
 
 Die Übersicht zeigt Kamera, TV-Steuerung und letzte Ereignisse. Ein Standbild der gespeicherten Protect-Kamera lässt sich bei Bedarf laden und aktualisieren. Es ist ausdrücklich kein Livebild. Weitere Hinweise stehen in aufklappbaren Bereichen.
 
@@ -53,16 +53,16 @@ Die Übersicht zeigt Kamera, TV-Steuerung und letzte Ereignisse. Ein Standbild d
 | Funktion | Was sie macht |
 | --- | --- |
 | **UniFi Protect einrichten** | Lokaler UniFi-Benutzer oder API-Schlüssel; Kamera und Bildqualität im Assistenten auswählen. |
-| **Manuell hinzufügen** | Einen vorhandenen RTSP-/RTSPS-Stream direkt als aktive Kamera speichern. |
+| **Manuell hinzufügen** | Mehrere RTSP-/RTSPS-Kameras privat speichern und am TV auswählen. |
 | **Zu Hause vortesten** | Echter NVR-Zugang und Standbild, getrennte Daten und simulierte TV-/GPIO-Aktionen. |
 | **Taster und TV** | GPIO-Taster, HDMI-CEC für Einschalten/Standby und einstellbare automatische Abschaltung. |
-| **Einfache TV-Bedienung** | Pfeiltasten, OK, Zurück; CEC-Empfänger für die TV-Fernbedienung vorbereitet. |
+| **Einfache TV-Bedienung** | Große Kameraauswahl mit Pfeilen, OK und Zurück; CEC-Empfang am Philips 55PUS6581/12 geprüft. |
 | **Kamera und Ereignisse** | Verbindungsstatus sowie letzte empfangene Bewegung, Person und Fahrzeug mit erkennbarer Aktualität. |
 | **Wiedergabe überwachen** | Festhängende Streams erkennen und mit wachsendem Abstand erneut verbinden. |
 | **Updates im Browser** | Stabile GitHub-Version prüfen, Installation bestätigen, Einstellungen sichern und nach Startfehlern zurückkehren. |
 | **Im Browser öffnen** | Passwortgeschütztes Dashboard direkt über die Pi-IP im Heimnetz öffnen. Fernzugriff über ein separat eingerichtetes VPN. |
 
-Aktuell zeigt die TV-Ansicht **eine ausgewählte Kamera**. Der Videoplayer läuft direkt auf dem Pi; das Dashboard zeigt Status und Standbilder.
+Die TV-Ansicht bietet mehrere Kameras zur Auswahl und zeigt **jeweils ein Kamerabild**. Zum Wechseln mit Zurück zur Auswahl gehen und eine andere Kamera mit OK öffnen. Der Videoplayer läuft direkt auf dem Pi; das Dashboard zeigt Status und Standbilder.
 
 ## Erst zu Hause ausprobieren
 
@@ -75,7 +75,7 @@ Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit)
 Zuerst [Betriebssystem, WLAN, Docker und benötigte Programme einrichten](docs/PI4.md). Anschließend als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.10 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.11 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -84,7 +84,7 @@ Fehlende Voraussetzungen zuerst ergänzen. Danach installieren:
 
 ```sh
 sudo loginctl enable-linger "$USER"
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.10
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.11
 ```
 
 Das öffentliche Image benötigt keine GitHub-Anmeldung. Docker wählt automatisch **ARM64**, **ARMv7** oder **AMD64** passend zum installierten System. Die Pi-Laufzeit wird aus derselben Image-Version übernommen.

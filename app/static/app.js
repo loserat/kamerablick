@@ -1,7 +1,8 @@
 let token=sessionStorage.getItem('oma-token')||'', latest=null, selectedCamera='', candidatePin='', candidateHost='', snapshotUrl='', noticeTimer, polling=false;
 let overviewSnapshotUrl='', overviewCameraKey='', overviewRequest=0, previewBusy=false, protectTestKey='';
+let camerasLoading=false,savedCamerasSignature='';
 const $=s=>document.querySelector(s);
-const pages={overview:['Übersicht',''],camera:['Kamera',''],settings:['Einstellungen',''],maintenance:['Wartung','']};
+const pages={overview:['Übersicht',''],camera:['Kameras',''],settings:['Einstellungen',''],maintenance:['Wartung','']};
 function page(){const name=location.hash.slice(1);return pages[name]?name:'overview'}
 function navigate(){const active=page();for(const e of document.querySelectorAll('.page'))e.hidden=e.id!==active;for(const a of document.querySelectorAll('nav a')){a.classList.toggle('active',a.dataset.page===active);if(a.dataset.page===active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}$('#page-title').textContent=pages[active][0];$('#page-description').textContent=pages[active][1];$('#page-description').hidden=!pages[active][1]}
 window.addEventListener('hashchange',()=>{navigate();window.scrollTo(0,0)});navigate();
@@ -48,8 +49,7 @@ function render(d,fill){
       if(field.tagName==='SELECT'&&!Array.from(field.options).some(option=>option.value===String(value)))field.add(new Option('Nach '+value+' Minuten',value));
       field.value=value;
     }
-    $('#manual-form').elements.camera_name.value=d.config.camera_name;
-    $('#manual-form').elements.stream_url.placeholder=d.config.has_stream?'Gespeichert · zum Ändern neu eingeben':'rtsps://…';
+    $('#manual-form').elements.stream_url.placeholder='rtsps://…';
     $('#protect-host').value=d.protect.host;
     $('#protect-auth').value=d.protect.auth_mode||'local';
     $('#protect-user').value=d.protect.username||'';
@@ -94,12 +94,45 @@ $('#refresh-preview').onclick=async()=>{
   }catch(error){if(requestId===overviewRequest)notify(error.name==='EncodingError'?'Standbild konnte nicht angezeigt werden.':error.message)}
   finally{if(candidate)URL.revokeObjectURL(candidate);previewBusy=false;$('#refresh-preview').removeAttribute('aria-busy');if(latest)renderPreview(latest)}
 };
-async function load(fill=false){const d=await api('status');render(d,fill)}
+async function load(fill=false){const d=await api('status');render(d,fill);if(fill||page()==='camera')refreshCameraList()}
+async function refreshCameraList(){
+  if(!token||camerasLoading)return;
+  camerasLoading=true;
+  try{
+    const data=await api('cameras');
+    const signature=JSON.stringify(data.cameras);
+    if(signature!==savedCamerasSignature){
+      savedCamerasSignature=signature;
+      $('#saved-camera-list').replaceChildren();
+      for(const camera of data.cameras){
+        const row=document.createElement('div');row.className='saved-camera-row';
+        const info=document.createElement('div');const name=document.createElement('strong');name.textContent=camera.name;
+        const detail=document.createElement('small');detail.textContent=camera.selected?'Startkamera':!camera.available?'Nicht erreichbar':camera.manual?'Eigener Stream':camera.id.startsWith('demo:')?'Beispielkamera':'UniFi Protect';
+        info.append(name,detail);row.append(info);
+        const actions=document.createElement('div');actions.className='actions';
+        if(!camera.selected){
+          const choose=document.createElement('button');choose.className='secondary';choose.textContent=camera.manual?'Als Startkamera':'Für TV einrichten';choose.disabled=!camera.available;
+          choose.onclick=()=>busy(choose,async()=>{notify((await api('cameras/select',{camera_id:camera.id,enable_stream:!camera.manual})).message);savedCamerasSignature='';await load(true)});
+          actions.append(choose);
+          if(camera.manual){
+            const remove=document.createElement('button');remove.className='text-button';remove.textContent='Entfernen';
+            remove.onclick=()=>{if(confirm('Kamera „'+camera.name+'“ entfernen?'))busy(remove,async()=>{notify((await api('cameras/remove',{camera_id:camera.id})).message);savedCamerasSignature='';await load(true)})};
+            actions.append(remove);
+          }
+        }
+        row.append(actions);$('#saved-camera-list').append(row);
+      }
+    }
+    $('#saved-camera-message').textContent=data.cameras.length?'Die Kameras sind in der TV-Ansicht auswählbar.':'UniFi verbinden oder eine eigene Kamera hinzufügen.';
+  }catch(error){$('#saved-camera-message').textContent=error.message}
+  finally{camerasLoading=false}
+}
+window.addEventListener('hashchange',()=>{if(page()==='camera')refreshCameraList()});
 $('#login-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{const d=await api('login',{password:$('#password').value});token=d.token;sessionStorage.setItem('oma-token',token);$('#password').value='';$('#notice').hidden=true;await load(true)})};
 $('#logout').onclick=()=>busy($('#logout'),async()=>{await api('logout',{});loggedOut()});
 $('#settings-form').addEventListener('input',()=>$('#save-state').textContent='Ungespeicherte Änderungen');
 $('#settings-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{notify((await api('config',Object.fromEntries(new FormData(e.target)))).message);$('#save-state').textContent='Gespeichert.';await load(true)})};
-$('#manual-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{notify((await api('config',Object.fromEntries(new FormData(e.target)))).message);e.target.elements.stream_url.value='';await load(true);location.hash='overview'})};
+$('#manual-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{await api('config',Object.fromEntries(new FormData(e.target)));e.target.reset();savedCamerasSignature='';await load(true);notify('Kamera gespeichert.')})};
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>busy(b,async()=>{notify((await api('action',{action:b.dataset.action})).message);await load()}));
 async function checkUpdates(){if($('#check-update').disabled)return;lastReleaseCheck=Date.now();return busy($('#check-update'),async()=>{try{const d=await api('update');updateRelease=d;updateSupport=d.maintenance;$('#update-result').textContent='Installiert: '+d.current+' · '+(d.available&&!latest?.demo?'Verfügbar: ':'GitHub: ')+d.version;$('#update-release-notes').textContent=d.notes||'Keine zusätzlichen Versionshinweise.';$('#update-release').hidden=false;renderMaintenance(updateSupport)}catch(error){$('#update-result').textContent=error.message;throw error}})}
 $('#check-update').onclick=checkUpdates;

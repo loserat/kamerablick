@@ -1,4 +1,4 @@
-import json, os, secrets, time, re, threading, urllib.request, urllib.error, sys
+import json, os, secrets, time, re, threading, urllib.request, urllib.error, sys, hashlib
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from protect import Protect, ProtectError, connection_credentials
@@ -22,6 +22,8 @@ lock=threading.RLock()
 sessions={}
 failures={}
 monitor=None
+catalog_lock=threading.Lock()
+catalog_cache={'key':None,'client':None,'rows':[],'until':0,'fresh':False}
 state={'tv':'Wiedergabe aus','message':'Heimtest – keine TV-/GPIO-Befehle' if HOME_TEST else 'Demomodus – keine Hardware verbunden','active':False,'remaining_seconds':0}
 DEMO_CAMERAS=[{'id':'demo-entry','name':'Haustür','model':'Beispielkamera','state':'CONNECTED'}, {'id':'demo-garden','name':'Garten','model':'Beispielkamera','state':'CONNECTED'},{'id':'demo-garage','name':'Garage','model':'Beispielkamera','state':'DISCONNECTED'}]
 
@@ -53,6 +55,99 @@ def agent(action,settings=None,remote_input=None):
 def apply(c):
     if not DEMO: agent('configure',c)
     save('config.json',c)
+
+
+def camera_rows():
+    """Private camera catalog. Stream addresses never leave the server."""
+    c=config();cred=credentials()
+    rows=[]
+    for item in read('manual-cameras.json',[]):
+        if isinstance(item,dict) and item.get('id') and item.get('stream_url'):
+            rows.append(item | {'source':'manual','available':True,'key':'manual:'+item['id']})
+    if c['camera_source']=='manual' and c['stream_url'] and not any(r['stream_url']==c['stream_url'] for r in rows):
+        rows.append({'id':c['camera_id'] or 'current','key':'manual:'+(c['camera_id'] or 'current'),
+            'name':c['camera_name'],'source':'manual','stream_url':c['stream_url'],'available':True})
+    fresh=True
+    if cred:
+        key=(str(DATA),hashlib.sha256(json.dumps(cred,sort_keys=True).encode()).hexdigest())
+        with catalog_lock:
+            if catalog_cache['key']!=key:
+                catalog_cache.update(key=key,client=None,rows=[],until=0,fresh=False)
+            if time.monotonic()>=catalog_cache['until']:
+                try:
+                    if catalog_cache['client'] is None:catalog_cache['client']=Protect(cred)
+                    found=catalog_cache['client'].cameras()
+                    catalog_cache.update(rows=found[:128],fresh=True,until=time.monotonic()+60)
+                except ProtectError:
+                    catalog_cache.update(fresh=False,until=time.monotonic()+10)
+            found=list(catalog_cache['rows']);fresh=catalog_cache['fresh']
+        rows.extend({'id':r['id'],'key':'protect:'+r['id'],'name':r['name'][:80],
+            'source':'protect','available':r['state']=='CONNECTED'} for r in found)
+        if not found and c['camera_source']=='protect' and c['camera_id'] and c['stream_url']:
+            rows.append({'id':c['camera_id'],'key':'protect:'+c['camera_id'],'name':c['camera_name'],
+                'source':'protect','available':True})
+    if DEMO and not HOME_TEST and not cred and not rows:
+        rows=[{'id':r['id'],'key':'demo:'+r['id'],'name':r['name'],'source':'demo',
+            'available':r['state']=='CONNECTED'} for r in DEMO_CAMERAS]
+    return rows,fresh
+
+
+def camera_selection_key(c=None):
+    c=c or config()
+    return c['camera_source']+':'+(c['camera_id'] or 'current')
+
+
+def public_cameras():
+    rows,fresh=camera_rows();selected=camera_selection_key()
+    return {'cameras':[{'id':r['key'],'name':r['name'],'available':r['available'],
+        'selected':r['key']==selected,'manual':r['source']=='manual'} for r in rows],
+        'selected_camera':selected,'cameras_fresh':fresh}
+
+
+def choose_camera(key,enable=False):
+    if not isinstance(key,str) or not 1<=len(key)<=300:raise ValueError('Bitte eine Kamera auswählen.')
+    rows,_=camera_rows()
+    camera=next((r for r in rows if r['key']==key),None)
+    if not camera or not camera['available']:raise ValueError('Diese Kamera ist gerade nicht erreichbar.')
+    previous=config();cred=credentials()
+    if camera['source']=='protect':
+        if previous['camera_source']=='protect' and previous['camera_id']==camera['id'] and previous['stream_url']:
+            stream=previous['stream_url']
+        else:
+            client=Protect(cred)
+            stream=(client.streams(camera['id'],previous['quality'],enable=True) if enable else
+                client.streams(camera['id'],previous['quality']))
+    elif camera['source']=='demo':
+        if not DEMO:raise ValueError('Beispielkameras sind hier nicht verfügbar.')
+        stream=''
+    else:stream=camera['stream_url']
+    with lock:
+        latest=config()
+        if credentials()!=cred or latest['quality']!=previous['quality']:
+            raise ValueError('Die Kameraeinrichtung wurde geändert. Bitte erneut auswählen.')
+        apply(latest|{'camera_name':camera['name'],'camera_id':camera['id'],
+            'camera_source':camera['source'],'stream_url':stream})
+
+
+def apply_manual(c):
+    """Retain previously entered streams when adding another manual camera."""
+    with lock:
+        previous=config();stored=read('manual-cameras.json',[])
+        rows=list(stored)
+        if previous['camera_source']=='manual' and previous['stream_url'] and not any(r['stream_url']==previous['stream_url'] for r in rows):
+            rows.append({'id':previous['camera_id'] or 'current','name':previous['camera_name'],'stream_url':previous['stream_url']})
+        existing=next((r for r in rows if r['stream_url']==c['stream_url']),None)
+        if existing:
+            selected=existing['id'];rows=[r|{'name':c['camera_name']} if r['id']==selected else r for r in rows]
+        else:
+            if len(rows)>=24:raise ValueError('Es sind bereits 24 eigene Kameras gespeichert.')
+            selected=secrets.token_hex(12)
+            rows.append({'id':selected,'name':c['camera_name'],'stream_url':c['stream_url']})
+        apply(c|{'camera_id':selected})
+        try:save('manual-cameras.json',rows)
+        except Exception:
+            apply(previous)
+            raise
 
 def valid_config(body):
     c=config()
@@ -171,7 +266,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send({'demo':DEMO,'camera_name':c['camera_name'],'ready':DEMO or (available and bool(c['stream_url']) and c['camera_source']!='demo'),
                     'active':bool(result.get('active')),'player_running':bool(result.get('player_running',False)),
                     'playback_progress':bool(result.get('player_health',{}).get('progress_fresh')),
-                    'remaining_seconds':result.get('remaining_seconds',0),'auto_off_minutes':c['auto_off_minutes'],'available':available,'telemetry':telemetry_status()})
+                    'remaining_seconds':result.get('remaining_seconds',0),'auto_off_minutes':c['auto_off_minutes'],'available':available,'telemetry':telemetry_status()}|public_cameras())
             if self.path.startswith('/api/'):
                 if not self.authorized(): return self.send({'error':'Bitte erneut anmelden.','reauth':True},401)
                 if self.path=='/api/status':
@@ -192,6 +287,8 @@ class Handler(BaseHTTPRequestHandler):
                         'message':'Einstellungen werden vor der Installation gesichert.'})
                 if self.path=='/api/update/status':
                     return self.send(maintenance_status())
+                if self.path=='/api/cameras':
+                    return self.send(public_cameras())
                 return self.send({'error':'Nicht gefunden'},404)
             name={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/tv':'tv.html','/tv/':'tv.html','/tv.css':'tv.css','/tv.js':'tv.js','/tv-navigation.js':'tv-navigation.js','/tv-remote.js':'tv-remote.js','/telemetry-view.js':'telemetry-view.js','/icon.svg':'icon.svg','/icon-512.png':'icon-512.png','/apple-touch-icon.png':'apple-touch-icon.png'}.get(self.path)
             if not name: return self.send({'error':'Nicht gefunden'},404)
@@ -248,9 +345,17 @@ class Handler(BaseHTTPRequestHandler):
             if self.path=='/api/tv/action':
                 if not self.tv_authorized(): return self.send({'error':'TV-Ansicht bitte einmal im Dashboard freigeben.','reauth':True},401)
                 if body.get('action') not in ('on','off','menu'): raise ValueError('Diese Aktion ist in der TV-Ansicht nicht verfügbar.')
+                if set(body)-{'action','camera_id'} or ('camera_id' in body and body['action']!='on'):
+                    raise ValueError('Ungültige Kameraaktion.')
+                if 'camera_id' in body:
+                    if not DEMO and (maintenance_status().get('job') or {}).get('busy'):
+                        raise MaintenanceError('Die Kameras werden gerade aktualisiert. Bitte kurz warten.',409)
+                    try:choose_camera(body['camera_id'])
+                    except ProtectError:
+                        raise ValueError('Diese Kamera ist gerade nicht verfügbar. Bitte um Hilfe bitten.') from None
                 return self.send(perform_action(body['action']))
             if not self.authorized(): return self.send({'error':'Bitte erneut anmelden.','reauth':True},401)
-            if self.path in ('/api/config','/api/protect/connect','/api/protect/select','/api/tv/revoke') and not DEMO:
+            if self.path in ('/api/config','/api/protect/connect','/api/protect/select','/api/tv/revoke','/api/cameras/select','/api/cameras/remove') and not DEMO:
                 job=maintenance_status().get('job') or {}
                 if job.get('busy'):
                     return self.send({'error':'Aktualisierung läuft. Einstellungen danach ändern.'},409)
@@ -275,8 +380,25 @@ class Handler(BaseHTTPRequestHandler):
                 with lock: sessions.pop(self.sid(),None)
                 return self.send({'message':'Abgemeldet'})
             if self.path=='/api/config':
-                with lock: apply(valid_config(body))
+                with lock:
+                    c=valid_config(body)
+                    if body.get('stream_url'):apply_manual(c)
+                    else:apply(c)
                 return self.send({'message':'Einstellungen gespeichert.'})
+            if self.path=='/api/cameras/select':
+                if 'camera_id' not in body or set(body)-{'camera_id','enable_stream'} or type(body.get('enable_stream',False)) is not bool:
+                    raise ValueError('Bitte eine Kamera auswählen.')
+                choose_camera(body['camera_id'],enable=body.get('enable_stream',False))
+                return self.send({'message':'Startkamera gespeichert.'})
+            if self.path=='/api/cameras/remove':
+                if set(body)!={'camera_id'} or not isinstance(body['camera_id'],str):raise ValueError('Ungültige Kamera.')
+                with lock:
+                    if body['camera_id']==camera_selection_key():raise ValueError('Zuerst eine andere Startkamera auswählen.')
+                    rows=read('manual-cameras.json',[])
+                    kept=[r for r in rows if 'manual:'+r['id']!=body['camera_id']]
+                    if len(kept)==len(rows):raise ValueError('Nur eigene gespeicherte Kameras können entfernt werden.')
+                    save('manual-cameras.json',kept)
+                return self.send({'message':'Kamera entfernt.'})
             if self.path=='/api/protect/connect':
                 is_demo=body.get('demo') is True
                 if is_demo:

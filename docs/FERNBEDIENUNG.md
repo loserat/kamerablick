@@ -1,14 +1,15 @@
 # TV-Fernbedienung
 
-Die Software nimmt Pfeile, OK und Zurück über HDMI-CEC entgegen. Der Fernseher empfängt weiterhin das Infrarotsignal und muss diese Tasten an den angeschlossenen Pi weitergeben. Ein eigener IR-Empfänger ist dafür zunächst nicht vorgesehen. Das tatsächliche TV-Modell und die Weitergabe sind noch ungeprüft.
+Die Software nimmt Pfeile, OK und Zurück über HDMI-CEC entgegen. Der Fernseher empfängt das Signal seiner Fernbedienung und gibt die Tasten an den angeschlossenen Pi weiter. Ein eigener IR-Empfänger ist dafür zunächst nicht vorgesehen. Empfang und Auswahlwechsel wurden an einem Philips 55PUS6581/12 geprüft; andere TV-Modelle müssen gesondert geprüft werden.
 
 ## Bedienung
 
 - Pfeile bewegen den hellen Auswahlrahmen.
-- OK öffnet die ausgewählte Schaltfläche.
-- Zurück schließt einen Dialog oder kehrt zur Übersicht zurück.
+- OK öffnet die ausgewählte Kamera.
+- Zurück schließt einen Dialog oder kehrt zur Kameraauswahl zurück.
 - Während des echten Kamerabilds schließen OK und Zurück den Player. Der Fernseher bleibt eingeschaltet. Das funktioniert im Pi-Dienst, auch wenn der Browser hinter dem Player liegt.
-- „Fernseher aus“ öffnet eine Bestätigung. Zuerst ist „Zurück“ ausgewählt.
+- Zum Kamerawechsel mit Zurück die Auswahl öffnen und eine andere Kamera mit Pfeilen und OK wählen.
+- „Fernseher ausschalten“ öffnet eine Bestätigung. Zuerst ist „Nein, zurück“ ausgewählt.
 
 Lautstärke, Ziffern und die Einschalt-/Standbytaste der Fernbedienung werden nicht in Menüaktionen umgewandelt. Es gibt keine systemweite Tastatureinspeisung. Unbekannte CEC-Codes werden zur Diagnose angezeigt und lösen keine Aktion aus.
 
