@@ -1,5 +1,11 @@
 # Änderungen
 
+## v0.1.12
+
+- Unter Wartung zeigt „Zuletzt geprüft“ Datum und Uhrzeit der letzten erfolgreichen GitHub-Versionsabfrage in deutscher Zeit.
+- Während einer neuen Prüfung und nach einer fehlgeschlagenen Abfrage wird kein alter Zeitpunkt als aktuelles Ergebnis angezeigt.
+- Diese kleine Änderung dient zusätzlich dem erneuten Test des regulären Updatewegs über das Pi-Dashboard.
+
 ## v0.1.11
 
 - Große TV-Kameraauswahl mit höchstens zwei Kacheln nebeneinander, an die Auflösung angepassten Schriften und klarer Auswahlmarkierung.

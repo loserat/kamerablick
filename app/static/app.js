@@ -134,7 +134,7 @@ $('#settings-form').addEventListener('input',()=>$('#save-state').textContent='U
 $('#settings-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{notify((await api('config',Object.fromEntries(new FormData(e.target)))).message);$('#save-state').textContent='Gespeichert.';await load(true)})};
 $('#manual-form').onsubmit=e=>{e.preventDefault();busy(e.submitter,async()=>{await api('config',Object.fromEntries(new FormData(e.target)));e.target.reset();savedCamerasSignature='';await load(true);notify('Kamera gespeichert.')})};
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>busy(b,async()=>{notify((await api('action',{action:b.dataset.action})).message);await load()}));
-async function checkUpdates(){if($('#check-update').disabled)return;lastReleaseCheck=Date.now();return busy($('#check-update'),async()=>{try{const d=await api('update');updateRelease=d;updateSupport=d.maintenance;$('#update-result').textContent='Installiert: '+d.current+' · '+(d.available&&!latest?.demo?'Verfügbar: ':'GitHub: ')+d.version;$('#update-release-notes').textContent=d.notes||'Keine zusätzlichen Versionshinweise.';$('#update-release').hidden=false;renderMaintenance(updateSupport)}catch(error){$('#update-result').textContent=error.message;throw error}})}
+async function checkUpdates(){if($('#check-update').disabled)return;lastReleaseCheck=Date.now();$('#update-checked').hidden=true;return busy($('#check-update'),async()=>{try{const d=await api('update');updateRelease=d;updateSupport=d.maintenance;$('#update-result').textContent='Installiert: '+d.current+' · '+(d.available&&!latest?.demo?'Verfügbar: ':'GitHub: ')+d.version;$('#update-release-notes').textContent=d.notes||'Keine zusätzlichen Versionshinweise.';$('#update-release').hidden=false;renderMaintenance(updateSupport);$('#update-checked').textContent='Zuletzt geprüft: '+new Intl.DateTimeFormat('de-DE',{dateStyle:'short',timeStyle:'medium',timeZone:'Europe/Berlin'}).format(new Date());$('#update-checked').hidden=false}catch(error){$('#update-result').textContent=error.message;throw error}})}
 $('#check-update').onclick=checkUpdates;
 function clearSnapshot(){if(snapshotUrl)URL.revokeObjectURL(snapshotUrl);snapshotUrl='';$('#snapshot').hidden=true;$('#snapshot').removeAttribute('src')}
 function resetRepair(){$('#stream-repair').hidden=true;$('#enable-stream').checked=false;$('#selection-message').textContent='';$('#done-link').hidden=true}
@@ -197,7 +197,7 @@ let updateRelease=null,updateSupport=null,updateWatching=false,completedUpdateJo
 let updateWatch=null;
 try{const saved=JSON.parse(sessionStorage.getItem('kamerablick-update-watch')||'null');if(saved&&typeof saved.watch==='string'&&saved.watch.length>=32&&saved.watch.length<=128)updateWatch=saved}catch{}
 function renderMaintenance(support){
-  if(latest?.version&&lastRenderedAppVersion!==latest.version){lastRenderedAppVersion=latest.version;updateRelease=null;lastReleaseCheck=0;$('#update-result').textContent='Installiert: '+latest.version+'.';$('#update-release').hidden=true}
+  if(latest?.version&&lastRenderedAppVersion!==latest.version){lastRenderedAppVersion=latest.version;updateRelease=null;lastReleaseCheck=0;$('#update-result').textContent='Installiert: '+latest.version+'.';$('#update-release').hidden=true;$('#update-checked').hidden=true}
   updateSupport=support||updateSupport;
   if(!updateSupport)return;
   const job=updateSupport.job;

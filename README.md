@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/loserat/kamerablick/actions/workflows/checks.yml"><img src="https://github.com/loserat/kamerablick/actions/workflows/checks.yml/badge.svg?branch=main" alt="Automatische Prüfungen"></a>
-  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.11-44464f" alt="Aktuelle Version"></a>
+  <a href="https://github.com/loserat/kamerablick/releases"><img src="https://img.shields.io/badge/Version-v0.1.12-44464f" alt="Aktuelle Version"></a>
   <img src="https://img.shields.io/badge/Raspberry_Pi-4B-44464f" alt="Zielgerät Raspberry Pi 4B">
   <img src="https://img.shields.io/badge/Status-fr%C3%BChe_Entwicklung-e4e4e7?labelColor=44464f" alt="Frühe Entwicklung">
 </p>
@@ -75,7 +75,7 @@ Empfohlenes Ziel ist ein **Raspberry Pi 4B mit WLAN und Raspberry Pi OS (64 Bit)
 Zuerst [Betriebssystem, WLAN, Docker und benötigte Programme einrichten](docs/PI4.md). Anschließend als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.11 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.12 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 python3 pi/install.py --check
 ```
@@ -84,7 +84,7 @@ Fehlende Voraussetzungen zuerst ergänzen. Danach installieren:
 
 ```sh
 sudo loginctl enable-linger "$USER"
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.11
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.12
 ```
 
 Das öffentliche Image benötigt keine GitHub-Anmeldung. Docker wählt automatisch **ARM64**, **ARMv7** oder **AMD64** passend zum installierten System. Die Pi-Laufzeit wird aus derselben Image-Version übernommen.
