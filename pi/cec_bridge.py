@@ -8,11 +8,32 @@ import os
 import secrets
 import threading
 import time
+from array import array
+from pathlib import Path
+import fcntl
 
 KEYS = {0x00: 'Enter', 0x01: 'ArrowUp', 0x02: 'ArrowDown',
         0x03: 'ArrowLeft', 0x04: 'ArrowRight', 0x0d: 'Escape'}
 LABELS = {'Enter': 'OK', 'ArrowUp': 'Hoch', 'ArrowDown': 'Runter',
           'ArrowLeft': 'Links', 'ArrowRight': 'Rechts', 'Escape': 'Zurück'}
+
+
+def connected_adapter(directory=Path('/dev')):
+    """Read the kernel's EDID-derived address; never take over a CEC adapter."""
+    for device in sorted(directory.glob('cec[0-9]*')):
+        if not re.fullmatch(r'cec[0-9]+', device.name):
+            continue
+        try:
+            with device.open('rb', buffering=0) as handle:
+                address = array('H', [0xffff])
+                # Linux CEC_ADAP_G_PHYS_ADDR, _IOR('a', 1, __u16).
+                fcntl.ioctl(handle, 0x80026101, address, True)
+            if address[0] != 0xffff:
+                return str(device)
+        except OSError:
+            continue
+    # USB adapters and systems without readable kernel CEC use libCEC discovery.
+    return None
 
 
 class RemoteInput:
@@ -95,8 +116,10 @@ class RemoteInput:
 
 class CecBridge:
     """Keep cec-client open; isolate native libCEC from the Python/GPIO service."""
-    def __init__(self, remote, factory=subprocess.Popen):
+    def __init__(self, remote, factory=subprocess.Popen, adapter_probe=connected_adapter):
         self.remote, self.factory = remote, factory
+        self.adapter_probe = adapter_probe
+        self.adapter = None
         self.io = threading.Lock()
         self.stop = threading.Event()
         self.process = None
@@ -155,7 +178,8 @@ class CecBridge:
 
     def snapshot(self):
         alive = self.process is not None and self.process.poll() is None
-        return {'connected': bool(self.connected and alive), 'message': self.message} | self.remote.diagnostic()
+        return {'connected': bool(self.connected and alive), 'message': self.message,
+                'adapter': self.adapter} | self.remote.diagnostic()
 
     def terminate(self):
         with self.io:
@@ -180,18 +204,28 @@ class CecBridge:
         while not self.stop.is_set():
             try:
                 with self.io:
-                    self.process = self.factory(['cec-client', '-d', '13', '-t', 'p', '-o', 'Kamerablick', '-aw', '0'],
+                    self.adapter = self.adapter_probe()
+                    args = ['cec-client', '-d', '13', '-t', 'p', '-o', 'Kamerablick', '-aw', '0']
+                    if self.adapter:
+                        args.append(self.adapter)
+                    self.process = self.factory(args,
                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                         text=True, bufsize=1)
                     process = self.process
                 # No shell, raw logs or credentials are exposed through the API.
                 opened_at = time.monotonic()
+                next_probe = opened_at + 5
                 buffer = b''
                 with selectors.DefaultSelector() as selector:
                     selector.register(process.stdout, selectors.EVENT_READ)
                     while not self.stop.is_set() and process.poll() is None:
                         if not self.connected and time.monotonic() - opened_at > 20:
                             break
+                        if time.monotonic() >= next_probe:
+                            next_probe = time.monotonic() + 5
+                            adapter = self.adapter_probe()
+                            if adapter is not None and adapter != self.adapter:
+                                break
                         if not selector.select(.2):
                             continue
                         chunk = os.read(process.stdout.fileno(), 4096)

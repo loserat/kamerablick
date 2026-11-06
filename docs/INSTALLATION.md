@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.8
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.9
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -46,6 +46,8 @@ Der Installer:
 Eigene bestehende Service- oder Autostartdateien gleichen Namens werden nicht überschrieben. Bei einem Fehler die Meldung prüfen und den Installer erneut ausführen; nicht einfach eigene Desktop-Konfigurationen löschen. Der Installer schreibt keine Zugangswerte in seine Ausgabe. Bei einem bereits installierten Image ist ein Versionswechsel über `pi/update.sh` vorgesehen. Ohne `--image` ist weiterhin ein lokaler Entwicklerbau möglich.
 
 Nach Ab- und erneuter Anmeldung am Desktop startet die TV-Ansicht automatisch. Der Browser wartet auf das Dashboard und erhält lokal einen eingeschränkten TV-Zugang. Ein Dashboard-Passwort muss nicht am Fernseher eingegeben werden. Ohne eingerichtete Kamera bleibt die Kamerakachel im Echtbetrieb gesperrt, Hilfe und Ausschalten bleiben verfügbar.
+
+Der TV-Browser verwendet ausschließlich das eigene Profil `~/.config/chromium-kamerablick` und startet mit `--password-store=basic`, damit nach Desktop-Autologin keine interaktive Schlüsselbund-Abfrage erscheint. Dieser Chromium-Speicher ist unverschlüsselt; in diesem TV-Profil keine Dashboard- oder UniFi-Passwörter speichern. Die TV-Freigabe erfolgt lokal durch den Pi-Dienst. Normale Browserprofile und der System-Schlüsselbund werden nicht geändert. [Chromium-Dokumentation](https://chromium.googlesource.com/chromium/src/+/main/docs/linux/password_storage.md)
 
 ## 3. Kamera und privaten Wartungszugang einrichten
 

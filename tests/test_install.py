@@ -116,6 +116,21 @@ class Installation(unittest.TestCase):
         with patch.object(kiosk.urllib.request, 'urlopen') as network:
             with self.assertRaises(ValueError): kiosk.provision('http://127.0.0.1:8088','short')
             network.assert_not_called()
+    def test_unattended_tv_uses_dedicated_profile_without_system_keyring(self):
+        with patch.object(kiosk.shutil,'which',return_value='/usr/bin/chromium'), \
+                patch.object(kiosk.Path,'home',return_value=self.home), \
+                patch.object(kiosk,'provision',return_value={'token':'tv-access-only','receiver':'cec-access-only'}), \
+                patch.object(kiosk.subprocess,'run',return_value=CompletedProcess([],0)) as launch:
+            with self.assertRaises(SystemExit) as stopped:
+                kiosk.main()
+        self.assertEqual(stopped.exception.code,0)
+        command=launch.call_args.args[0]
+        self.assertIn('--password-store=basic',command)
+        self.assertIn('--user-data-dir='+str(self.home/'.config/chromium-kamerablick'),command)
+        self.assertIn('--kiosk',command)
+        self.assertNotIn('--no-sandbox',command)
+        self.assertEqual(launch.call_args.kwargs['stdout'],subprocess.DEVNULL)
+        self.assertEqual(launch.call_args.kwargs['stderr'],subprocess.DEVNULL)
     def test_desktop_socket_detection(self):
         self.assertEqual(session.display_socket({'WAYLAND_DISPLAY':'wayland-1','XDG_RUNTIME_DIR':'/run/user/1000'}),Path('/run/user/1000/wayland-1'))
         self.assertEqual(session.display_socket({'DISPLAY':':0.0'}),Path('/tmp/.X11-unix/X0'))

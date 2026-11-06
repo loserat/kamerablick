@@ -4,10 +4,10 @@ import unittest
 import subprocess
 import time
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parents[1] / 'pi'))
-from cec_bridge import CecBridge, RemoteInput
+from cec_bridge import CecBridge, RemoteInput, connected_adapter
 from agent import Controller
 
 
@@ -152,14 +152,15 @@ class CecProcess(unittest.TestCase):
             def factory(args,**kwargs):
                 calls.append(args)
                 return subprocess.Popen([sys.executable,'-u',str(path)],**kwargs)
-            remote=RemoteInput();bridge=CecBridge(remote,factory)
+            remote=RemoteInput();bridge=CecBridge(remote,factory,adapter_probe=lambda:'/dev/cec1')
             bridge.start()
             try:
                 deadline=time.monotonic()+3
                 while not bridge.snapshot()['connected'] and time.monotonic()<deadline: time.sleep(.02)
                 self.assertTrue(bridge.snapshot()['connected'])
                 self.assertNotIn('-s',calls[0])
-                self.assertEqual(calls[0][-2:],['-aw','0'])
+                self.assertEqual(calls[0][-3:],['-aw','0','/dev/cec1'])
+                self.assertEqual(bridge.snapshot()['adapter'],'/dev/cec1')
                 bridge.command('on')
                 keys=[]
                 while not keys and time.monotonic()<deadline:
@@ -168,6 +169,55 @@ class CecProcess(unittest.TestCase):
             finally: bridge.close()
             self.assertFalse(bridge.thread.is_alive())
             self.assertIsNone(bridge.process)
+
+
+class CecAdapters(unittest.TestCase):
+    def test_second_connected_hdmi_and_unavailable_first_adapter(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            for name in ('cec0','cec1','cec1-untrusted'): (root/name).touch()
+            def ioctl(handle, request, value, mutate):
+                self.assertEqual(request,0x80026101)
+                value[0]=0xffff if Path(handle.name).name=='cec0' else 0x4000
+            with patch('cec_bridge.fcntl.ioctl',side_effect=ioctl):
+                self.assertEqual(connected_adapter(root),str(root/'cec1'))
+            def unavailable(handle, request, value, mutate):
+                if Path(handle.name).name=='cec0': raise PermissionError()
+                value[0]=0x4000
+            with patch('cec_bridge.fcntl.ioctl',side_effect=unavailable):
+                self.assertEqual(connected_adapter(root),str(root/'cec1'))
+
+    def test_disconnected_or_unreadable_kernel_adapters_use_libcec_discovery(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);(root/'cec0').touch()
+            with patch('cec_bridge.fcntl.ioctl'):
+                self.assertIsNone(connected_adapter(root))
+            with patch('cec_bridge.fcntl.ioctl',side_effect=OSError()):
+                self.assertIsNone(connected_adapter(root))
+
+    def test_hdmi_change_releases_old_helper_before_opening_new_one(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'helper.py'
+            path.write_text("import time\nprint('connection opened',flush=True)\ntime.sleep(30)\n")
+            selected=['/dev/cec0'];calls=[];processes=[]
+            def factory(args,**kwargs):
+                self.assertTrue(all(p.poll() is not None for p in processes))
+                calls.append(args)
+                process=subprocess.Popen([sys.executable,'-u',str(path)],**kwargs)
+                processes.append(process)
+                return process
+            bridge=CecBridge(RemoteInput(),factory,adapter_probe=lambda:selected[0])
+            bridge.start()
+            try:
+                deadline=time.monotonic()+3
+                while not bridge.snapshot()['connected'] and time.monotonic()<deadline:time.sleep(.02)
+                self.assertTrue(bridge.snapshot()['connected'])
+                selected[0]='/dev/cec1'
+                deadline=time.monotonic()+13
+                while len(calls)<2 and time.monotonic()<deadline:time.sleep(.05)
+                self.assertEqual([args[-1] for args in calls],['/dev/cec0','/dev/cec1'])
+            finally:bridge.close()
+            self.assertTrue(all(p.poll() is not None for p in processes))
 
 
 

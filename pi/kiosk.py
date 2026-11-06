@@ -42,7 +42,9 @@ def main():
             time.sleep(5)
     profile = Path.home() / '.config/chromium-kamerablick'
     # Credentials appear neither in terminal output nor in journal error messages.
-    result = subprocess.run([browser, '--user-data-dir=' + str(profile), '--kiosk',
+    # This dedicated TV profile uses local pairing, never saved account passwords.
+    # Avoid an interactive desktop keyring prompt during unattended startup.
+    result = subprocess.run([browser, '--user-data-dir=' + str(profile), '--kiosk', '--password-store=basic',
         '--no-first-run', '--no-default-browser-check', '--disable-session-crashed-bubble',
         base + '/tv#access=' + quote(access['token'], safe='') + '&receiver=' + quote(access['receiver'], safe='')],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

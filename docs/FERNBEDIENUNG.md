@@ -14,7 +14,7 @@ Lautstärke, Ziffern und die Einschalt-/Standbytaste der Fernbedienung werden ni
 
 ## Am Fernseher prüfen
 
-1. HDMI-CEC im TV aktivieren und den HDMI-Eingang des Pi auswählen.
+1. HDMI-CEC im TV aktivieren und den HDMI-Eingang des Pi auswählen. Bei Philips kann zusätzlich „EasyLink-Fernbedienung“ beziehungsweise „EasyLink Remote Control“ erforderlich sein; die Bezeichnung hängt vom Modell ab.
 2. Die Kamerablick-TV-Anwendung auf dem Pi starten. Ein über das Dashboard geöffnetes zusätzliches TV-Fenster erhält keinen Fernbedienungsempfang.
 3. Im geschützten Dashboard „Wartung → Fernbedienung“ öffnen. Adapterverbindung und TV-Empfänger müssen erkennbar sein.
 4. Jede Pfeiltaste, OK und Zurück einzeln drücken. Angezeigte Taste und Auswahlrahmen vergleichen.
@@ -25,6 +25,14 @@ Lautstärke, Ziffern und die Einschalt-/Standbytaste der Fernbedienung werden ni
 9. HDMI-Verbindung trennen/wiederherstellen und prüfen, dass die Diagnose aktuell wird und keine alten Tastendrücke ausgeführt werden.
 
 Kommt keine Taste an, zuerst TV-Einstellung, richtigen HDMI-Anschluss und Geräteberechtigungen des Desktop-Benutzers prüfen. `cec-client` nicht parallel zum Pi-Dienst starten: Der Pi-Dienst hält den CEC-Adapter für Empfang und Schaltbefehle geöffnet. Bei Bedarf den Dienst für externe Diagnosewerkzeuge vorher stoppen.
+
+Auf dem Pi wird der angeschlossene HDMI-Port anhand der vom Kernel gemeldeten CEC-Adresse gewählt. So funktioniert auch der zweite HDMI-Anschluss, ohne dass libCEC den ersten, unbenutzten Anschluss belegt. Ein Wechsel auf einen anderen angeschlossenen Port wird automatisch erneut geprüft. Ohne lesbaren Kernel-Adapter bleibt die Erkennung von libCEC verfügbar, etwa für USB-Adapter. Die Abfrage selbst sendet keine TV-Befehle. Grundlage ist die [Linux-CEC-Schnittstelle](https://docs.kernel.org/userspace-api/media/cec/cec-ioc-adap-g-phys-addr.html).
+
+### Bild vorhanden, aber keine Tasten nach einem Gerätewechsel
+
+Bildübertragung und CEC-Tasten sind getrennte Funktionen. Ein alter Quellenname, etwa der Name des zuvor angeschlossenen Players, beweist allein keinen Fehler. Bei einem Philips 55PUS6581/12 waren beide EasyLink-Schalter eingeschaltet und CEC-Statusantworten kamen an, während keine Tasten weitergegeben wurden. Erst nach einem vollständigen TV-Neustart war Kamerablick als aktive CEC-Quelle eingetragen; eine über den TV ausgelöste Pfeiltaste kam anschließend am Pi an. Die eigentliche TV-Fernbedienung muss zusätzlich geprüft werden.
+
+Bei diesem Fehlerbild die gespeicherten Einstellungen erhalten, den Fernseher vollständig neu starten und den Pi-Eingang erneut auswählen. Ein Pi-Neustart oder TV-Standby allein setzt die Gerätezuordnung des Fernsehers nicht zwingend zurück. Anschließend unter Wartung die letzte empfangene Taste prüfen. Wenn dort weiterhin keine Taste erscheint, das konkrete TV-Modell und die aktive CEC-Gerätezuordnung prüfen, bevor Tastenzuordnungen der App geändert werden.
 
 ## Schutz und Wiederverbindung
 

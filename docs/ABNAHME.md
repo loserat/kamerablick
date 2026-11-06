@@ -1,6 +1,6 @@
-# Goal-Abnahme Kamerablick
+# Geräteprüfung Kamerablick
 
-Stand: 04.11.2026. Das Gesamtziel ist offen. Ein Pi 4B wurde bereits installiert; sein aktueller Dienststand ist nicht verifiziert. Der Pi ist laut Nutzer derzeit ausgeschaltet. Protect-Version, TV-Modell, echte Tasterverdrahtung und privater Fernzugriff müssen am Ziel geprüft werden. Private Adressen und Zugangsdaten werden in diesem öffentlichen Dokument nicht gespeichert.
+Stand: 06.11.2026. Auf einem echten Pi 4B wurden der automatische Start von Dashboard, Pi-Dienst, TV-Browser und Wartungsdienst sowie die Erreichbarkeit des Dashboards im Heimnetz geprüft. Am Philips 55PUS6581/12 wurde eine über den Fernseher ausgelöste Pfeiltaste tatsächlich per HDMI-CEC empfangen. Die vollständige Prüfung mit physischer Fernbedienung, echter Protect-Kamera, GPIO-Taster und privatem Fernzugriff steht noch aus. Private Adressen und Zugangsdaten werden in diesem öffentlichen Dokument nicht gespeichert.
 
 ## Nachweise zu den neun Abnahmekriterien
 
@@ -11,7 +11,7 @@ Stand: 04.11.2026. Das Gesamtziel ist offen. Ein Pi 4B wurde bereits installiert
 | 3. Protect und manuelle Kamera | Lokaler Benutzer oder API-Schlüssel, Zertifikatprüfung, Kameraliste, Standbild, Bildqualität und Stream-Freigabe. TLS-Testkonsole, API- und Browserprüfungen mit Testdaten. | Mit dem echten NVR verbinden; Standbild, Berechtigungen und flüssiges Livebild am TV prüfen. |
 | 4. TV-Ansicht und Fernbedienung | Große Schaltflächen, sichtbare Auswahl, Pfeile/OK/Zurück und Ausschaltbestätigung. Browser-Tastaturprüfung sowie Tests für Navigation und CEC-Zustellung. | Echte IR-/CEC-Fernbedienung, Tasten halten/loslassen und Rückkehr aus dem Player am konkreten Fernseher prüfen. |
 | 5. GPIO und Abschaltzeit | Tastersteuerung und einstellbare Abschaltung; simulierte Hardwaretests. | Verdrahteten Taster mehrmals betätigen; Einschalten, zweiter Druck Standby und automatische Abschaltung beobachten. |
-| 6. Ausfälle und veraltete Werte | Wiedergabefortschritt, begrenzte Wiederverbindungsversuche und Aktualitätskennzeichnung. Streamlabor mit echtem RTSP/RTSPS und erzeugtem Testvideo; Quellprüfsummen von Agent, CEC und Player stimmen mit dem vorhandenen Nachweis überein. | Tatsächlichen Kamera-/Netzausfall, Rückkehr und sichtbar aktuelles Bild am TV prüfen. |
+| 6. Ausfälle und veraltete Werte | Wiedergabefortschritt, begrenzte Wiederverbindungsversuche und Aktualitätskennzeichnung. Streamlabor mit echtem RTSP/RTSPS und erzeugtem Testvideo für den Stand vor der automatischen HDMI-Portwahl. Die neue Portwahl ist getrennt durch Prozess- und Geräteprüfungen abgesichert. | Tatsächlichen Kamera-/Netzausfall, Rückkehr und sichtbar aktuelles Bild am TV prüfen. |
 | 7. Browser-Updates und Datenerhalt | Bestätigter Updateauftrag, Sicherung, gemeinsame Container-/Pi-Laufzeit und Rückkehr. Isoliertes Docker-Labor prüft Browserbedienung, fehlerhaftes Image, Unterbrechung und datenerhaltende Neuinstallation. | Mindestens ein veröffentlichtes Update auf dem echten Pi aus der Oberfläche durchführen und anschließend Kamera, Taster und TV erneut prüfen. |
 | 8. Privater Fernzugriff | Passwortschutz, getrennte TV-Berechtigung und kein Docker-Socket im Dashboard. Konkreter VPN-Einrichtungs- und Prüfweg in [FERNZUGRIFF.md](FERNZUGRIFF.md). | VPN am Pi und Wartungsgerät einrichten und Dashboard/SSH aus einem fremden Netz nach Pi-Neustart testen. |
 | 9. Repository und Dokumentation | Versionierte Installationswege, aktuelle Abbildungen, veröffentlichte Images und reproduzierbare Prüfprogramme. Private Konfiguration und erzeugte Berichte liegen außerhalb des Repositories. | Dokumentation nach dem tatsächlichen Gerätestand gegenprüfen; private Abnahmeergebnisse aufbewahren. |
@@ -35,4 +35,4 @@ Die Prüfprogramme liegen unter [tests/](../tests/). GitHub führt [Projektprüf
 
 Für jeden Schritt Datum, Pi-/OS-Version, App-Version, Ergebnis und einen konkreten Nachweis notieren. Sinnvolle Nachweise sind ein redigierter Diagnosebericht, beobachtete Tasterzyklen, gemessene Abschaltzeit, tatsächlich empfangene CEC-Tasten und der Versionswechsel im Dashboard. Passwörter, API-Schlüssel, VPN-Anmeldelinks und ungekürzte private Konfigurationen nicht veröffentlichen.
 
-Das Goal bleibt aktiv, bis Installation, Kamera, Taster, TV-Bedienung und ein Browser-Update am echten Pi erfolgreich geprüft sind und der private Fernzugriff funktioniert. Unbestätigte Punkte bleiben offen.
+Die Gesamtprüfung ist erst abgeschlossen, wenn Installation, Kamera, Taster, TV-Bedienung und ein Browser-Update am echten Pi erfolgreich geprüft sind und der private Fernzugriff funktioniert. Unbestätigte Punkte bleiben offen.
