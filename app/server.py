@@ -44,6 +44,27 @@ def config(): return DEFAULT | read('config.json',{})
 def credentials(): return read('protect.json',{})
 def public_config(c): return {k:v for k,v in c.items() if k!='stream_url'} | {'has_stream':bool(c['stream_url'])}
 
+PASSWORD_ROUNDS=600000
+
+def password_record(password):
+    salt=secrets.token_hex(16)
+    digest=hashlib.pbkdf2_hmac('sha256',password.encode(),bytes.fromhex(salt),PASSWORD_ROUNDS).hex()
+    return {'schema':1,'algorithm':'pbkdf2-sha256','rounds':PASSWORD_ROUNDS,'salt':salt,'digest':digest}
+
+def password_matches(password):
+    if not isinstance(password,str) or len(password)>1024:return False
+    stored=read('dashboard-auth.json',None)
+    if stored is None and not (DATA/'dashboard-auth.json').exists():
+        # Existing installations retain their initial .env login until changed.
+        return bool(PASSWORD) and secrets.compare_digest(password.encode(),PASSWORD.encode())
+    if (not isinstance(stored,dict) or stored.get('schema')!=1 or stored.get('algorithm')!='pbkdf2-sha256'
+            or stored.get('rounds')!=PASSWORD_ROUNDS or not isinstance(stored.get('salt'),str)
+            or not re.fullmatch('[0-9a-f]{32}',stored['salt']) or not isinstance(stored.get('digest'),str)
+            or not re.fullmatch('[0-9a-f]{64}',stored['digest'])):
+        raise ValueError('Gespeicherter Dashboard-Zugang ist ungültig. Installation prüfen.')
+    digest=hashlib.pbkdf2_hmac('sha256',password.encode(),bytes.fromhex(stored['salt']),PASSWORD_ROUNDS).hex()
+    return secrets.compare_digest(digest,stored['digest'])
+
 def agent(action,settings=None,remote_input=None):
     # The API key is deliberately never sent to the hardware service.
     payload={'action':action,'input':remote_input} if action=='remote_poll' else {'action':action,'config':settings or config()}
@@ -254,6 +275,19 @@ class Handler(BaseHTTPRequestHandler):
         with lock:
             s=sessions.get(self.sid())
             return bool(s and s['expires']>time.time())
+    def verify_password(self,password):
+        now=time.time();ip=self.client_address[0]
+        attempts=[t for t in failures.get(ip,[]) if t>now-60]
+        failures[ip]=attempts
+        if len(attempts)>=8:
+            self.send({'error':'Zu viele Anmeldeversuche. Bitte eine Minute warten.'},429)
+            return False
+        if not password_matches(password):
+            attempts.append(now)
+            self.send({'error':'Passwort falsch.'},401)
+            return False
+        failures.pop(ip,None)
+        return True
     def tv_authorized(self):
         access=read('tv-access.json',{}).get('token','')
         return bool(access and secrets.compare_digest(self.sid(),access))
@@ -303,19 +337,13 @@ class Handler(BaseHTTPRequestHandler):
             body=json.loads(self.rfile.read(length))
             if not isinstance(body,dict): raise ValueError('Ungültige Anfrage.')
             if self.path=='/api/login':
-                now=time.time(); ip=self.client_address[0]
+                now=time.time()
                 with lock:
-                    attempts=[t for t in failures.get(ip,[]) if t>now-60]
-                    failures[ip]=attempts
-                    if len(attempts)>=8: return self.send({'error':'Zu viele Anmeldeversuche. Bitte eine Minute warten.'},429)
-                    if not PASSWORD or not secrets.compare_digest(str(body.get('password','')),PASSWORD):
-                        attempts.append(now)
-                        return self.send({'error':'Passwort falsch.'},401)
+                    if not self.verify_password(body.get('password')):return
                     for key in list(sessions):
                         if sessions[key]['expires']<now: sessions.pop(key,None)
                     if len(sessions)>=100: sessions.pop(next(iter(sessions)))
                     sid=secrets.token_urlsafe(32);sessions[sid]={'expires':now+43200,'pending':None}
-                    failures.pop(ip,None)
                 return self.send({'token':sid})
             if self.path=='/api/update/progress':
                 watch=body.get('watch')
@@ -355,7 +383,7 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError('Diese Kamera ist gerade nicht verfügbar. Bitte um Hilfe bitten.') from None
                 return self.send(perform_action(body['action']))
             if not self.authorized(): return self.send({'error':'Bitte erneut anmelden.','reauth':True},401)
-            if self.path in ('/api/config','/api/protect/connect','/api/protect/select','/api/tv/revoke','/api/cameras/select','/api/cameras/remove') and not DEMO:
+            if self.path in ('/api/config','/api/password','/api/protect/connect','/api/protect/select','/api/tv/revoke','/api/cameras/select','/api/cameras/remove') and not DEMO:
                 job=maintenance_status().get('job') or {}
                 if job.get('busy'):
                     return self.send({'error':'Aktualisierung läuft. Einstellungen danach ändern.'},409)
@@ -379,6 +407,20 @@ class Handler(BaseHTTPRequestHandler):
             if self.path=='/api/logout':
                 with lock: sessions.pop(self.sid(),None)
                 return self.send({'message':'Abgemeldet'})
+            if self.path=='/api/password':
+                if set(body)!={'current_password','new_password','confirm_password'}:
+                    raise ValueError('Bitte bisheriges und neues Passwort eingeben.')
+                new=body['new_password'];confirm=body['confirm_password']
+                if not isinstance(new,str) or not 4<=len(new)<=128:
+                    raise ValueError('Das neue Passwort muss 4 bis 128 Zeichen haben.')
+                if not isinstance(confirm,str) or new!=confirm:
+                    raise ValueError('Die neuen Passwörter stimmen nicht überein.')
+                with lock:
+                    if not self.authorized():return self.send({'error':'Bitte erneut anmelden.','reauth':True},401)
+                    if not self.verify_password(body['current_password']):return
+                    save('dashboard-auth.json',password_record(new))
+                    sessions.clear()
+                return self.send({'message':'Passwort geändert. Bitte neu anmelden.'})
             if self.path=='/api/config':
                 with lock:
                     c=valid_config(body)
@@ -463,7 +505,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception: self.send({'error':'Aktion fehlgeschlagen. Einstellungen und Pi-Dienst prüfen.'},502)
 
 if __name__=='__main__':
-    if not PASSWORD: raise SystemExit('DASHBOARD_PASSWORD muss gesetzt sein')
+    if not PASSWORD and not (DATA/'dashboard-auth.json').exists(): raise SystemExit('DASHBOARD_PASSWORD muss gesetzt sein')
     if not DEMO and len(TOKEN)<24: raise SystemExit('AGENT_TOKEN muss mindestens 24 Zeichen haben')
     monitor=Telemetry(DATA/'telemetry.json', config, credentials)
     try:

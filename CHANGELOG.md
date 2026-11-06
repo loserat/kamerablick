@@ -1,5 +1,12 @@
 # Änderungen
 
+## v0.1.13
+
+- Dashboard-Passwort direkt unter Einstellungen ändern: bisheriges Passwort, neues Passwort und Wiederholung.
+- Gesalzener Passwortprüfwert im privaten Datenvolume; kein neues Klartextpasswort in der Konfiguration. Bestehende Installationen verwenden bis zur ersten Änderung weiterhin ihren bisherigen Zugang.
+- Nach dem Speichern alle Dashboard-Sitzungen abmelden; UniFi, Kameras und TV-Kopplung bleiben erhalten.
+- Fehlversuche begrenzen, Passwortänderung während eines Updates sperren und bei einem Speicherfehler den bisherigen Zugang erhalten.
+
 ## v0.1.12
 
 - Unter Wartung zeigt „Zuletzt geprüft“ Datum und Uhrzeit der letzten erfolgreichen GitHub-Versionsabfrage in deutscher Zeit.

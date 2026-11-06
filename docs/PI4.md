@@ -41,7 +41,7 @@ docker compose version
 Als normaler Desktop-Benutzer:
 
 ```sh
-git clone --branch v0.1.12 https://github.com/loserat/kamerablick.git ~/kamerablick
+git clone --branch v0.1.13 https://github.com/loserat/kamerablick.git ~/kamerablick
 cd ~/kamerablick
 sudo loginctl enable-linger "$USER"
 python3 pi/install.py --check
@@ -50,7 +50,7 @@ python3 pi/install.py --check
 Fehlende Voraussetzungen aus der Prüfung zuerst ergänzen. Danach:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.12
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.13
 ```
 
 Das öffentliche Image enthält bereits **ARM64**; Docker wählt diese Variante automatisch. Für den Wechsel vom Pi 2B zum Pi 4B ist kein neues Anwendungsimage nötig. Der Pi muss den Container nicht selbst bauen.
@@ -59,7 +59,7 @@ Das Dashboard läuft in Docker. Taster, HDMI-CEC, Videoplayer und TV-Browser lau
 
 ## 4. Kamera und Wartungszugang einrichten
 
-Im Browser auf deinem Rechner oder Smartphone im selben Heimnetz **`http://PI-IP:8088`** öffnen. `PI-IP` durch die WLAN-/LAN-Adresse des Raspberry Pi ersetzen. Bei der neuen Pi-Installation ist dafür kein SSH-Tunnel nötig. Das Dashboard verlangt sein zufällig erzeugtes Passwort aus `~/kamerablick/.env`.
+Im Browser auf deinem Rechner oder Smartphone im selben Heimnetz **`http://PI-IP:8088`** öffnen. `PI-IP` durch die WLAN-/LAN-Adresse des Raspberry Pi ersetzen. Bei der neuen Pi-Installation ist dafür kein SSH-Tunnel nötig. Für die erste Anmeldung gilt das zufällig erzeugte Passwort aus `~/kamerablick/.env`. Danach lässt es sich im Dashboard unter Einstellungen ändern.
 
 Vorhandene Installationen behalten ihre bisherige Bindung. Die Umstellung auf direkten Heimnetzzugriff und die Alternative per SSH-Tunnel stehen unter [Installation](INSTALLATION.md#3-kamera-und-privaten-wartungszugang-einrichten). Für den direkten HTTP-Zugriff ein vertrauenswürdiges Heimnetz verwenden; es wird keine Router-Portfreigabe benötigt.
 

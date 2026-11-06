@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.12
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.13
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -51,7 +51,7 @@ Der TV-Browser verwendet ausschließlich das eigene Profil `~/.config/chromium-k
 
 ## 3. Kamera und privaten Wartungszugang einrichten
 
-Eine neue Pi-Installation ist im selben Heimnetz direkt unter **`http://PI-IP:8088`** erreichbar. Die WLAN-/LAN-Adresse des Raspberry Pi verwenden; ein SSH-Tunnel ist dafür nicht nötig. Das neu erzeugte Dashboard-Passwort steht auf dem Pi in `.env`.
+Eine neue Pi-Installation ist im selben Heimnetz direkt unter **`http://PI-IP:8088`** erreichbar. Die WLAN-/LAN-Adresse des Raspberry Pi verwenden; ein SSH-Tunnel ist dafür nicht nötig. Das anfängliche Dashboard-Passwort steht auf dem Pi in `.env`. Danach lässt es sich unter **Einstellungen → Dashboard-Passwort ändern** ändern; anschließend gilt das neu gesetzte Passwort.
 
 Bei einer vorhandenen Installation bleibt die gespeicherte Einstellung erhalten. Für direkten Zugriff auf dem Pi:
 

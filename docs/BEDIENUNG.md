@@ -2,7 +2,7 @@
 
 ## Für die Einrichtung
 
-Das Dashboard im selben Heimnetz unter `http://PI-IP:8088` öffnen. Das Dashboard-Passwort gehört zur Kamerablick-Installation; es ist nicht das UniFi-Passwort. Das bei der Installation erzeugte Passwort steht nur lokal in `~/kamerablick/.env`. Zugangswerte nicht in Issues, Screenshots oder GitHub übernehmen.
+Das Dashboard im selben Heimnetz unter `http://PI-IP:8088` öffnen. Das Dashboard-Passwort gehört zur Kamerablick-Installation; es ist nicht das UniFi-Passwort. Das anfängliche Passwort steht nur lokal in `~/kamerablick/.env`. Nach einer Änderung in der Oberfläche gilt das dort neu gesetzte Passwort. Zugangswerte nicht in Issues, Screenshots oder GitHub übernehmen.
 
 ### UniFi Protect
 
@@ -17,6 +17,12 @@ Die TV-Ansicht zeigt die Kameras der verbundenen Protect-Zentrale. Die Metadaten
 Unter **Eigene Kamera hinzufügen** einen verständlichen Namen und die vorhandene RTSP-/RTSPS-Adresse eingeben. Weitere Kameras auf dieselbe Weise ergänzen. Frühere Einträge bleiben erhalten; dieselbe Stream-Adresse aktualisiert den vorhandenen Eintrag. Es lassen sich bis zu 24 eigene Kameras speichern. Die App verwahrt diese Adressen privat in `manual-cameras.json` im Datenvolume.
 
 In **Kameras am Fernseher** eine gespeicherte Kamera mit **Als Startkamera** auswählen. Eigene, gerade nicht ausgewählte Kameras lassen sich dort nach Bestätigung entfernen. Protect-Kameras werden auf der Protect-Zentrale verwaltet.
+
+### Dashboard-Passwort ändern
+
+Unter **Einstellungen → Dashboard-Passwort ändern** das bisherige Passwort, das neue Passwort und dessen Wiederholung eingeben. Mit **Passwort ändern** speichern und anschließend neu anmelden. Möglich sind 4 bis 128 Zeichen; ein längeres Passwort lässt sich ebenfalls vergeben. Das Dashboard-Passwort ist getrennt vom UniFi-Zugang.
+
+Alle bestehenden Dashboard-Anmeldungen werden beendet. Kameras, TV-Kopplung und Fernbedienung bleiben erhalten. Das neue Passwort wird ausschließlich als gesalzener Prüfwert in `dashboard-auth.json` im privaten Datenvolume gespeichert und bleibt bei Containerneustarts und regulären Updates erhalten. Der bisherige Wert in `.env` gilt danach nicht mehr für die Anmeldung. Während eines Updates ist die Änderung gesperrt.
 
 ### Weitere Einstellungen
 

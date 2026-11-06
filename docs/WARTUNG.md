@@ -25,8 +25,8 @@ Bei einer früher abgebrochenen Installation kann ein bereits laufender Wartungs
 
 | Speicherort | Inhalt |
 | --- | --- |
-| `.env` | Dashboard-Passwort, Dienstschlüssel, Bindung, Port und gewähltes Image. |
-| Docker-Datenvolume | Kamerakonfiguration, Protect-Zugang, eigene Kameras, TV-Kopplung und Ereigniszustand. |
+| `.env` | Anfängliches Dashboard-Passwort, Dienstschlüssel, Bindung, Port und gewähltes Image. |
+| Docker-Datenvolume | Kamerakonfiguration, Protect-Zugang, eigener Dashboard-Passwortprüfwert, eigene Kameras, TV-Kopplung und Ereigniszustand. |
 | `~/.config/oma-tv/` | Lokale Diensteinstellungen und Pi-Konfiguration. |
 | `.install.json`, `.runtime/` | Installationszuordnung und versionierte Pi-Laufzeiten. |
 | `.maintenance/`, `backups/update-state.json` | Laufender oder letzter Updateauftrag und Wiederherstellungszustand. |

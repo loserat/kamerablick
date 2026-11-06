@@ -52,6 +52,71 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(self.call('/api/status')[0],401)
         for _ in range(8): self.assertEqual(self.call('/api/login',{'password':'wrong'})[0],401)
         self.assertEqual(self.call('/api/login',{'password':'wrong'})[0],429)
+    def test_password_change_persists_and_revokes_admin_sessions_only(self):
+        other=self.call('/api/login',{'password':'test-only'})[1]['token']
+        access=self.call('/api/tv/pair',{})[1]['token']
+        server.save('protect.json',{'host':'https://console.invalid','password':'private-protect-test'})
+        server.save('tv-receiver.json',{'token':'receiver-test'})
+        before={name:(server.DATA/name).read_bytes() for name in ('protect.json','tv-access.json','tv-receiver.json')}
+        body={'current_password':'test-only','new_password':'1234','confirm_password':'1234'}
+        self.assertEqual(self.call('/api/password',body)[0],200)
+        for sid in (self.token,other):self.assertEqual(self.call('/api/status',token=sid)[0],401)
+        self.assertEqual(self.call('/api/tv/status',token=access)[0],200)
+        self.assertEqual(before,{name:(server.DATA/name).read_bytes() for name in before})
+        server.sessions.clear()
+        self.assertEqual(self.call('/api/login',{'password':'test-only'})[0],401)
+        code,result=self.call('/api/login',{'password':'1234'})
+        self.assertEqual(code,200)
+        path=server.DATA/'dashboard-auth.json';stored=json.loads(path.read_text())
+        self.assertEqual(path.stat().st_mode&0o777,0o600)
+        self.assertEqual(stored['algorithm'],'pbkdf2-sha256')
+        self.assertNotIn('1234',stored.values())
+        public=json.dumps(self.call('/api/status',token=result['token'])[1])
+        self.assertNotIn(stored['digest'],public);self.assertNotIn(stored['salt'],public)
+        self.assertEqual(self.call('/dashboard-auth.json')[0],404)
+    def test_password_change_requires_admin_current_password_and_confirmation(self):
+        body={'current_password':'test-only','new_password':'1234','confirm_password':'1234'}
+        access=self.call('/api/tv/pair',{})[1]['token']
+        for token in ('invalid',access):self.assertEqual(self.call('/api/password',body,token)[0],401)
+        self.assertEqual(self.call('/api/password',body|{'current_password':'wrong'})[0],401)
+        for change in ({'new_password':'abc'},{'new_password':'x'*129},{'new_password':1234},
+                       {'confirm_password':'different'},{'extra':True}):
+            self.assertEqual(self.call('/api/password',body|change)[0],400)
+        self.assertFalse((server.DATA/'dashboard-auth.json').exists())
+        self.assertEqual(self.call('/api/login',{'password':'test-only'})[0],200)
+    def test_password_reauthentication_is_rate_limited(self):
+        body={'current_password':'wrong','new_password':'1234','confirm_password':'1234'}
+        for _ in range(8):self.assertEqual(self.call('/api/password',body)[0],401)
+        self.assertEqual(self.call('/api/password',body|{'current_password':'test-only'})[0],429)
+        self.assertFalse((server.DATA/'dashboard-auth.json').exists())
+    def test_password_change_during_update_is_rejected(self):
+        server.DEMO=False
+        with patch.object(server,'maintenance_status',return_value={'job':{'busy':True}}):
+            self.assertEqual(self.call('/api/password',{'current_password':'test-only','new_password':'1234','confirm_password':'1234'})[0],409)
+        self.assertFalse((server.DATA/'dashboard-auth.json').exists())
+    def test_password_write_failure_keeps_previous_login_and_sessions(self):
+        with patch.object(server,'save',side_effect=OSError('test-only storage failure')):
+            code,result=self.call('/api/password',{'current_password':'test-only','new_password':'1234','confirm_password':'1234'})
+        self.assertEqual(code,502);self.assertNotIn('storage failure',json.dumps(result))
+        self.assertEqual(self.call('/api/status')[0],200)
+        self.assertEqual(self.call('/api/login',{'password':'test-only'})[0],200)
+        self.assertEqual(self.call('/api/login',{'password':'1234'})[0],401)
+    def test_corrupt_saved_password_never_reactivates_environment_password(self):
+        for stored in (None,{}, {'schema':1,'algorithm':'pbkdf2-sha256','rounds':1,'salt':'a'*32,'digest':'b'*64}):
+            server.save('dashboard-auth.json',stored)
+            self.assertEqual(self.call('/api/login',{'password':'test-only'})[0],400)
+        (server.DATA/'dashboard-auth.json').write_text('{invalid')
+        self.assertEqual(self.call('/api/login',{'password':'test-only'})[0],400)
+    def test_password_rotation_supports_unicode_and_a_fresh_salt(self):
+        new='Türprüfung 2026'
+        body={'current_password':'test-only','new_password':new,'confirm_password':new}
+        self.assertEqual(self.call('/api/password',body)[0],200)
+        first=server.read('dashboard-auth.json',{})
+        self.token=self.call('/api/login',{'password':new})[1]['token']
+        self.assertEqual(self.call('/api/password',body|{'current_password':new})[0],200)
+        second=server.read('dashboard-auth.json',{})
+        self.assertNotEqual(first['salt'],second['salt']);self.assertNotEqual(first['digest'],second['digest'])
+        self.assertEqual(self.call('/api/login',{'password':new})[0],200)
     def test_overview_snapshot_requires_admin_and_uses_only_saved_camera(self):
         self.assertEqual(self.call('/api/protect/preview',{},token='invalid')[0],401)
         self.assertEqual(self.call('/api/protect/preview',{})[0],400)
