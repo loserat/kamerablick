@@ -144,6 +144,7 @@ Das Dashboard hat keinen Docker-Socket und keinen direkten GPIO-/CEC-Gerätezugr
 | Ereignisse und Aktualität | [Telemetrie](docs/TELEMETRIE.md) |
 | VPN vorbereiten und prüfen | [Fernzugriff](docs/FERNZUGRIFF.md) |
 | Gerätetest, Softwaretests und offene Punkte | [Prüfprotokoll](docs/ABNAHME.md) |
+| Öffentliche Dateien und schlanke Docker-Pakete | [Repository und Auslieferung](docs/REPOSITORY.md) |
 | Quellcode, lokale Tests und Beiträge | [Entwicklung](docs/ENTWICKLUNG.md) · [Beitragen](CONTRIBUTING.md) |
 | Ältere Hardware mit LAN | [Pi 2B als Alternative](docs/PI2.md) |
 | Änderungen je Version | [Changelog](CHANGELOG.md) |

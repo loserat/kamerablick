@@ -17,6 +17,7 @@ DEMO_MODE=true .venv/bin/python app/server.py
 
 ```sh
 python3 tools/check_docs.py
+python3 tools/check_repository.py
 ```
 
 Das Werkzeug prüft lokale Dokumentationslinks, Anker, Bilddateien, die aktuelle Installationsversion und den anonymisierten Prüfstand. Es benötigt keine Zusatzpakete und sendet keine Netzwerkabfragen.
@@ -50,6 +51,10 @@ Die Programme bauen eigene Testimages, verwenden eigene Container/Volumes und r�
 Das Browser-Update-Labor prüft echte Containerwechsel, Sicherung, fehlerbedingte Rückkehr und Wiederherstellung nach einer Unterbrechung. GitHub-Antworten, Image-Download und systemd werden dort durch Testgegenstellen ersetzt. Ausschließlich sein isolierter Wartungs-Testcontainer erhält Zugriff auf die Docker-Engine; das Dashboard erhält keinen Docker-Socket.
 
 Erzeugte JSON-Prüfberichte und private lokale Nachweise außerhalb des Repositories archivieren. Sie sind Momentaufnahmen eines Testlaufs; die reproduzierbaren Prüfprogramme bleiben in Git. Bestätigte Gerätefunktionen und noch offene Prüfungen stehen in [ABNAHME.md](ABNAHME.md).
+
+## Öffentliche Dateien
+
+Testprogramme bleiben im Repository; persönliche Daten, generierte Berichte und Testarchive bleiben lokal. Der [Repository- und Paketleitfaden](REPOSITORY.md) beschreibt die Docker-Dateiauswahl, die Geheimnisprüfung und den Bereinigungsstand.
 
 ## App-Icon
 

@@ -30,6 +30,7 @@ Ein Test am eigenen NVR ohne TV-/GPIO-Befehle ist über den getrennten [Heimtest
 | Komponenten, Ports, Zugang und Datenhaltung | [Architektur](ARCHITEKTUR.md) |
 | Testaufbau, Ergebnisse und offene Hardwareprüfungen | [Geräteprüfung](ABNAHME.md) |
 | Anonymisierte Zusammenfassung des geprüften Releases | [Prüfstand v0.1.13](verification/v0.1.13.json) |
+| Öffentliche Dateien, Testquellen und Docker-Abgrenzung | [Repository und Auslieferung](REPOSITORY.md) |
 | Lokale Tests und Docker-Labore | [Entwicklung](ENTWICKLUNG.md) |
 | Veröffentlichte Änderungen | [Changelog](../CHANGELOG.md) |
 | Projektbeiträge | [Contributing](../CONTRIBUTING.md) |
