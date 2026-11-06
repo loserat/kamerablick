@@ -11,9 +11,9 @@ Als bisheriger Kamerablick-Benutzer auf dem Pi:
 ```sh
 cd ~/kamerablick
 git fetch origin --tags
-git checkout v0.1.9
+git checkout v0.1.10
 sudo loginctl enable-linger "$USER"
-python3 pi/activate_browser_updates.py --image ghcr.io/loserat/kamerablick:v0.1.9
+python3 pi/activate_browser_updates.py --image ghcr.io/loserat/kamerablick:v0.1.10
 ```
 
 Git erhält lokale Daten und verweigert einen Wechsel, der geänderte Quelldateien überschreiben würde. Bei einer solchen Meldung die eigenen Änderungen zuerst prüfen. Kein `git reset --hard` und keine Neuinstallation mit gelöschten Daten verwenden.
@@ -31,7 +31,7 @@ sudo loginctl enable-linger "$USER"
 python3 pi/reinstall.py --image ghcr.io/loserat/kamerablick:v0.1.4
 ```
 
-Für einen anschließenden Browser-Updatetest ist v0.1.4 als Ausgangsversion vorgesehen; danach die neuere angebotene Version unter Wartung installieren. Für eine direkte Einrichtung auf v0.1.9 diese Image-Version angeben.
+Für einen anschließenden Browser-Updatetest ist v0.1.4 als Ausgangsversion vorgesehen; danach die neuere angebotene Version unter Wartung installieren. Für eine direkte Einrichtung auf v0.1.10 diese Image-Version angeben.
 
 Der Helfer benötigt einen erreichbaren bisherigen Dashboard-Container für die Datensicherung. Er sichert Einstellungen, Zugangswerte, bisherige Dienstdateien und das tatsächlich verwendete Image unter `backups/neuinstallation-…`. Einen offenen Updatezustand und den letzten Auftrag verschiebt er in diese private Sicherung. Danach richtet er Container und verwaltete Pi-Dienste aus dem gewählten offiziellen Image erneut ein. Das bestehende Docker-Datenvolume, Passwort und die Kameraeinrichtung bleiben erhalten. Er löscht keine Datenvolumes und räumt keine alten Sicherungen auf.
 
@@ -51,12 +51,12 @@ Der Installer richtet den eigenen Wartungsdienst automatisch ein. Er läuft unab
 
 Die bisherigen Installer haben den Pfad in `EnvironmentFile=` fälschlich in Anführungszeichen geschrieben. systemd interpretiert diese Einstellung als einzelnen absoluten Pfad und ignoriert die so zitierte Datei. Dadurch fehlen `AGENT_TOKEN` und weitere Einstellungen beim regulären Start; Meldungen wie „Lokaler Wartungsschlüssel fehlt“ sind die Folge. Ein direkt über `systemd-run` mit unzitiertem Pfad gestarteter Dienst konnte hingegen funktionieren. Ab v0.1.6 erzeugt der Installer den korrekten Ladepfad für Wartung, Pi-Dienst und TV-Browser. Die Tests prüfen die alten und neuen Dateien zusätzlich mit dem echten systemd-Parser.
 
-Bei einem bereits laufenden v0.1.4-Dashboard den korrigierten Installer aus v0.1.9 verwenden, um die Dienstdateien erneut einzurichten. Dabei kann das vorhandene Image beibehalten werden:
+Bei einem bereits laufenden v0.1.4-Dashboard den korrigierten Installer aus v0.1.10 verwenden, um die Dienstdateien erneut einzurichten. Dabei kann das vorhandene Image beibehalten werden:
 
 ```sh
 cd ~/kamerablick
 git fetch origin --tags
-git checkout v0.1.9
+git checkout v0.1.10
 python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.4
 systemctl --user start oma-tv-session.target
 ```

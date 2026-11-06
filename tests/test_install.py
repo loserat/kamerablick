@@ -5,6 +5,8 @@ from pathlib import Path
 import shutil
 import sys
 import subprocess
+import signal
+import time
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -120,17 +122,41 @@ class Installation(unittest.TestCase):
         with patch.object(kiosk.shutil,'which',return_value='/usr/bin/chromium'), \
                 patch.object(kiosk.Path,'home',return_value=self.home), \
                 patch.object(kiosk,'provision',return_value={'token':'tv-access-only','receiver':'cec-access-only'}), \
-                patch.object(kiosk.subprocess,'run',return_value=CompletedProcess([],0)) as launch:
+                patch.object(kiosk.subprocess,'Popen') as launch:
+            launch.return_value.wait.return_value=0
+            launch.return_value.poll.return_value=0
             with self.assertRaises(SystemExit) as stopped:
                 kiosk.main()
         self.assertEqual(stopped.exception.code,0)
         command=launch.call_args.args[0]
         self.assertIn('--password-store=basic',command)
+        self.assertIn('--disable-features=Translate',command)
         self.assertIn('--user-data-dir='+str(self.home/'.config/chromium-kamerablick'),command)
         self.assertIn('--kiosk',command)
         self.assertNotIn('--no-sandbox',command)
         self.assertEqual(launch.call_args.kwargs['stdout'],subprocess.DEVNULL)
         self.assertEqual(launch.call_args.kwargs['stderr'],subprocess.DEVNULL)
+    def test_kiosk_service_stop_closes_browser_in_its_own_process_session(self):
+        child=self.root/'browser.py';marker=self.root/'browser.pid'
+        child.write_text("import os,signal,sys,time\nfrom pathlib import Path\nos.setsid()\np=Path(sys.argv[1])\ndef stop(*args):\n p.with_suffix('.stopped').write_text('closed')\n raise SystemExit(0)\nsignal.signal(signal.SIGTERM,stop)\np.write_text(str(os.getpid()))\ntime.sleep(30)\n")
+        code='import sys;sys.path.insert(0,'+repr(str(PI))+');import kiosk;kiosk.run_browser([sys.executable,'+repr(str(child))+','+repr(str(marker))+'])'
+        parent=subprocess.Popen([sys.executable,'-c',code],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        try:
+            deadline=time.monotonic()+5
+            while not marker.exists() and parent.poll() is None and time.monotonic()<deadline:time.sleep(.02)
+            self.assertTrue(marker.exists(),'TV browser did not start')
+            child_pid=int(marker.read_text())
+            self.assertNotEqual(os.getpgid(child_pid),os.getpgid(parent.pid))
+            parent.terminate()
+            self.assertEqual(parent.wait(timeout=8),0)
+            self.assertEqual(marker.with_suffix('.stopped').read_text(),'closed')
+            with self.assertRaises(ProcessLookupError):os.kill(child_pid,0)
+        finally:
+            if parent.poll() is None:
+                parent.kill();parent.wait(timeout=3)
+            if marker.exists():
+                try:os.kill(int(marker.read_text()),signal.SIGTERM)
+                except ProcessLookupError:pass
     def test_desktop_socket_detection(self):
         self.assertEqual(session.display_socket({'WAYLAND_DISPLAY':'wayland-1','XDG_RUNTIME_DIR':'/run/user/1000'}),Path('/run/user/1000/wayland-1'))
         self.assertEqual(session.display_socket({'DISPLAY':':0.0'}),Path('/tmp/.X11-unix/X0'))

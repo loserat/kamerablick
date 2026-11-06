@@ -1,6 +1,6 @@
 # Geräteprüfung Kamerablick
 
-Stand: 06.11.2026. Auf einem echten Pi 4B wurden der automatische Start von Dashboard, Pi-Dienst, TV-Browser und Wartungsdienst sowie die Erreichbarkeit des Dashboards im Heimnetz geprüft. Am Philips 55PUS6581/12 wurde eine über den Fernseher ausgelöste Pfeiltaste tatsächlich per HDMI-CEC empfangen. Die vollständige Prüfung mit physischer Fernbedienung, echter Protect-Kamera, GPIO-Taster und privatem Fernzugriff steht noch aus. Private Adressen und Zugangsdaten werden in diesem öffentlichen Dokument nicht gespeichert.
+Stand: 06.11.2026. Auf einem echten Pi 4B wurden der automatische Start von Dashboard, Pi-Dienst, TV-Browser und Wartungsdienst sowie die Erreichbarkeit des Dashboards im Heimnetz geprüft. Am Philips 55PUS6581/12 wurden Pfeiltasten tatsächlich per HDMI-CEC empfangen und ein sichtbarer Auswahlwechsel auf dem Pi-Bildschirm geprüft. Der Benutzer hat die Bedienung mit der echten TV-Fernbedienung bestätigt. Echte Protect-Kamera, GPIO-Taster, Rückkehr aus dem Player und privater Fernzugriff sind weiterhin gesondert zu prüfen. Private Adressen und Zugangsdaten werden in diesem öffentlichen Dokument nicht gespeichert.
 
 ## Nachweise zu den neun Abnahmekriterien
 

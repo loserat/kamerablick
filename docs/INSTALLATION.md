@@ -28,7 +28,7 @@ python3 pi/install.py --check
 Das liest nur Voraussetzungen. Fehlende Voraussetzungen zuerst ergänzen. Anschließend:
 
 ```sh
-python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.9
+python3 pi/install.py --install --image ghcr.io/loserat/kamerablick:v0.1.10
 ```
 
 Quellcode und Container werden über [loserat/kamerablick](https://github.com/loserat/kamerablick) veröffentlicht. Verwende Quellstand und Image derselben Version. Die öffentlich freigegebenen Images lassen sich ohne GitHub-Anmeldung abrufen.
@@ -47,7 +47,7 @@ Eigene bestehende Service- oder Autostartdateien gleichen Namens werden nicht ü
 
 Nach Ab- und erneuter Anmeldung am Desktop startet die TV-Ansicht automatisch. Der Browser wartet auf das Dashboard und erhält lokal einen eingeschränkten TV-Zugang. Ein Dashboard-Passwort muss nicht am Fernseher eingegeben werden. Ohne eingerichtete Kamera bleibt die Kamerakachel im Echtbetrieb gesperrt, Hilfe und Ausschalten bleiben verfügbar.
 
-Der TV-Browser verwendet ausschließlich das eigene Profil `~/.config/chromium-kamerablick` und startet mit `--password-store=basic`, damit nach Desktop-Autologin keine interaktive Schlüsselbund-Abfrage erscheint. Dieser Chromium-Speicher ist unverschlüsselt; in diesem TV-Profil keine Dashboard- oder UniFi-Passwörter speichern. Die TV-Freigabe erfolgt lokal durch den Pi-Dienst. Normale Browserprofile und der System-Schlüsselbund werden nicht geändert. [Chromium-Dokumentation](https://chromium.googlesource.com/chromium/src/+/main/docs/linux/password_storage.md)
+Der TV-Browser verwendet ausschließlich das eigene Profil `~/.config/chromium-kamerablick` und startet mit `--password-store=basic`, damit nach Desktop-Autologin keine interaktive Schlüsselbund-Abfrage erscheint. Dieser Chromium-Speicher ist unverschlüsselt; in diesem TV-Profil keine Dashboard- oder UniFi-Passwörter speichern. Die TV-Freigabe erfolgt lokal durch den Pi-Dienst. Normale Browserprofile und der System-Schlüsselbund werden nicht geändert. Die Übersetzungsabfrage ist für den TV-Browser deaktiviert. Bei regulärem Dienststopp oder App-Update beendet der Starter seinen eigenen Browserprozess ausdrücklich, auch wenn Chromium ihn in einen eigenen systemd-Bereich verschoben hat. [Chromium-Dokumentation](https://chromium.googlesource.com/chromium/src/+/main/docs/linux/password_storage.md)
 
 ## 3. Kamera und privaten Wartungszugang einrichten
 
